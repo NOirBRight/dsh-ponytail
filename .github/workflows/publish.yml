@@ -3,6 +3,7 @@ name: publish
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -10,6 +11,8 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      HAS_NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,6 +25,10 @@ jobs:
       - name: Verify release
         run: pnpm run check
       - name: Publish to npm
+        if: env.HAS_NPM_TOKEN == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Skip npm publish when no token is configured
+        if: env.HAS_NPM_TOKEN != 'true'
+        run: echo 'NPM_TOKEN is not configured; GitHub Release remains the published artifact.'
