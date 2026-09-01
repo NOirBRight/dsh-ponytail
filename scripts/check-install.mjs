@@ -16,7 +16,7 @@ try {
   const archive = join(temporary, `${packageManifest.name}-${packageManifest.version}.tgz`)
   execFileSync('pnpm', ['add', '--ignore-scripts', '--dir', app, archive], { cwd: root, stdio: 'inherit' })
 
-  const installedRoot = join(app, 'node_modules', 'dsh-ponytail')
+  const installedRoot = join(app, 'node_modules', packageManifest.name)
   const manifest = JSON.parse(await readFile(join(installedRoot, 'package.json'), 'utf8'))
   assert.equal(manifest.dsh.bundle.patch, './cordis.patch.yml')
   assert.equal((await import(pathToFileURL(join(installedRoot, 'lib/index.js')).href)).name, 'dsh-ponytail')

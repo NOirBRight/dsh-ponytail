@@ -30,4 +30,4 @@ alpha.2/alpha.3 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ig
 
 ## 兼容性边界
 
-`package.json` 的 peer 版本精确固定到 alpha.3；不从工作区 `deepseek-harness` checkout 解析依赖。`cordis.patch.yml` 只插入 `dsh-ponytail` bundle 行，用户 profile 负责组合顺序。插件可以在 alpha.3 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；3082 的 alpha.2 仅作为实验面做了兼容性验收，不改变发布目标。
+`package.json` 的 peer 版本精确固定到 alpha.3；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名为 `dsh-ponytail`，发行包名为 `dsh-ponytail-skills`，`cordis.patch.yml` 挂载该发行包并保留 `dsh-ponytail` 的 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在 alpha.3 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；3082 的 alpha.2 仅作为实验面做了兼容性验收，不改变发布目标。

@@ -4,6 +4,20 @@
 
 ## 安装
 
+已发布的 npm 包（`dsh-ponytail-skills`）：
+
+```sh
+dsh plugin --profile web add dsh-ponytail-skills
+```
+
+固定 GitHub release：
+
+```sh
+dsh plugin --profile web add github:gongyijie85/dsh-ponytail#v0.2.0
+```
+
+本地验收使用 checkout：
+
 ```sh
 DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
 ```
@@ -11,6 +25,8 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 第一阶段只在 `~/.dsh-lab` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
 此 bundle 固定兼容 `dsh-v0.1.2-alpha.3` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
+
+仓库名称为 `dsh-ponytail`；npm 包使用 `dsh-ponytail-skills`，因为不带 scope 的 `dsh-ponytail` 名称已由其他维护者占用。
 
 ## 模式与命令
 

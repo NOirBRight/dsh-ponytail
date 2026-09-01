@@ -4,6 +4,20 @@
 
 ## Install
 
+Published package (`dsh-ponytail-skills`):
+
+```sh
+dsh plugin --profile web add dsh-ponytail-skills
+```
+
+Pinned GitHub release:
+
+```sh
+dsh plugin --profile web add github:gongyijie85/dsh-ponytail#v0.2.0
+```
+
+Lab checkout for local acceptance:
+
 ```sh
 DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
 ```
@@ -11,6 +25,8 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 For the first acceptance pass, install the link only in the `~/.dsh-lab` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
 The bundle is built for `dsh-v0.1.2-alpha.3` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
+
+The repository is named `dsh-ponytail`; its npm package is `dsh-ponytail-skills` because the unscoped `dsh-ponytail` package name is already owned by another publisher.
 
 ## Modes and commands
 

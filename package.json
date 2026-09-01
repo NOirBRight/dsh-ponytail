@@ -1,7 +1,8 @@
 {
-  "name": "dsh-ponytail",
-  "version": "0.1.0",
+  "name": "dsh-ponytail-skills",
+  "version": "0.2.0",
   "description": "Ponytail modes, skills, commands, and GUI integration for DeepSeek Harness",
+  "private": false,
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -42,12 +43,30 @@
     "snapshot:record": "pnpm run build && DSH_SNAPSHOT=record node scripts/check-snapshot.mjs",
     "install:smoke": "node scripts/check-install.mjs",
     "prototype:settings": "node prototype/serve.mjs",
+    "prepare": "pnpm run build",
     "check": "pnpm run test && pnpm run typecheck && pnpm run build && pnpm run loader:smoke && pnpm run client-loader:smoke && pnpm run snapshot:smoke && pnpm run pack:check && pnpm run install:smoke"
   },
   "engines": {
     "node": ">=22.19.0"
   },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gongyijie85/dsh-ponytail.git"
+  },
+  "homepage": "https://github.com/gongyijie85/dsh-ponytail",
+  "bugs": {
+    "url": "https://github.com/gongyijie85/dsh-ponytail/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "plugin",
+    "ponytail",
+    "yagni",
+    "minimal"
+  ],
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"

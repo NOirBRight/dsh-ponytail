@@ -23,7 +23,7 @@ evaluate(code)
 const bootstrapRegistration = pendingQueue.shift()
 assert.equal(bootstrapRegistration?.id, '@deepseek-ai/dsh-client-modules')
 const registration = pendingQueue[0]
-assert.equal(registration.id, 'dsh-ponytail')
+assert.equal(registration.id, 'dsh-ponytail-skills')
 
 const staticModules = {
   react: await import('react'),
@@ -39,18 +39,18 @@ const system = bootstrapExports.createClientModuleSystem(target, {
   boot: {
     rev: 'client-loader-smoke',
     entries: [{
-      id: 'dsh-ponytail',
+      id: 'dsh-ponytail-skills',
       url: 'about:blank?rev=client-loader-smoke',
       rev: 'client-loader-smoke',
       inject: [],
       external: ['react', 'react/jsx-runtime'],
     }],
-    batches: [{ phase: 'application', url: 'about:blank?rev=client-loader-smoke', rev: 'client-loader-smoke', entries: ['dsh-ponytail'] }],
+    batches: [{ phase: 'application', url: 'about:blank?rev=client-loader-smoke', rev: 'client-loader-smoke', entries: ['dsh-ponytail-skills'] }],
   },
   staticModules,
 })
 
-const exports = await system.import('dsh-ponytail')
+const exports = await system.import('dsh-ponytail-skills')
 assert.equal(typeof exports.apply, 'function')
 assert.deepEqual(exports.inject, ['slots', 'locale', 'settingsScope', 'sessions'])
 console.log('client loader smoke passed: alpha.3 materialized the built browser face')
