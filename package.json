@@ -52,11 +52,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gongyijie85/dsh-ponytail.git"
+    "url": "git+https://github.com/NOirBRight/dsh-ponytail.git"
   },
-  "homepage": "https://github.com/gongyijie85/dsh-ponytail",
+  "homepage": "https://github.com/NOirBRight/dsh-ponytail",
   "bugs": {
-    "url": "https://github.com/gongyijie85/dsh-ponytail/issues"
+    "url": "https://github.com/NOirBRight/dsh-ponytail/issues"
   },
   "keywords": [
     "dsh",

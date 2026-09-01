@@ -4,16 +4,16 @@
 
 ## Install
 
-Published package (`dsh-ponytail-skills`):
+Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add dsh-ponytail-skills
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.0
 ```
 
-Pinned GitHub release:
+Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add github:gongyijie85/dsh-ponytail#v0.2.0
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.0/dsh-ponytail-skills-0.2.0.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -26,7 +26,7 @@ For the first acceptance pass, install the link only in the `~/.dsh-lab` / port 
 
 The bundle is built for `dsh-v0.1.2-alpha.3` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
 
-The repository is named `dsh-ponytail`; its npm package is `dsh-ponytail-skills` because the unscoped `dsh-ponytail` package name is already owned by another publisher.
+The repository is named `dsh-ponytail`; its release package is `dsh-ponytail-skills` because the unscoped `dsh-ponytail` npm name is already owned by another publisher. The GitHub release is the current distribution channel; npm publication can be enabled later by configuring `NPM_TOKEN`.
 
 ## Modes and commands
 
