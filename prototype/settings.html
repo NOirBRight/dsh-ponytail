@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ponytail 设置原型</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #20242b;
+        --muted: #68717d;
+        --faint: #8e98a5;
+        --line: #dfe4e9;
+        --line-strong: #cbd3dc;
+        --surface: #ffffff;
+        --surface-soft: #f6f8fa;
+        --surface-warm: #fbf8f2;
+        --accent: #2d6cdf;
+        --accent-soft: #eaf1ff;
+        --accent-ink: #17479d;
+        --success: #2b8a62;
+        --shadow: 0 18px 50px rgba(29, 39, 52, .12);
+        --radius: 18px;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 320px; background: #e9edf1; }
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background: #e9edf1;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      button, input, select { font: inherit; }
+      button { cursor: pointer; }
+      button:focus-visible, input:focus-visible, select:focus-visible {
+        outline: 3px solid rgba(45, 108, 223, .24);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-columns: 216px minmax(0, 1fr);
+        min-height: 100vh;
+        background: var(--surface);
+      }
+      .app-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        padding: 22px 14px;
+        border-right: 1px solid var(--line);
+        background: #f7f9fb;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 10px;
+        font-weight: 700;
+        letter-spacing: -.01em;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        background: #20242b;
+        color: white;
+        font-size: 16px;
+      }
+      .sidebar-heading {
+        margin: 0 10px 8px;
+        color: var(--faint);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+      }
+      .sidebar-list { display: grid; gap: 3px; }
+      .sidebar-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 9px 10px;
+        border: 0;
+        border-radius: 10px;
+        color: var(--muted);
+        background: transparent;
+        text-align: left;
+      }
+      .sidebar-item.active { color: var(--accent-ink); background: var(--accent-soft); font-weight: 650; }
+      .sidebar-item span:first-child { width: 18px; color: currentColor; text-align: center; }
+      .sidebar-foot { margin-top: auto; padding: 0 10px; color: var(--faint); font-size: 12px; }
+
+      .app-main { min-width: 0; background: #fff; }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 64px;
+        padding: 0 34px;
+        border-bottom: 1px solid var(--line);
+      }
+      .breadcrumb { color: var(--muted); }
+      .breadcrumb strong { color: var(--ink); }
+      .prototype-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        border: 1px solid #e7d2a6;
+        border-radius: 999px;
+        color: #805c17;
+        background: #fff7e4;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+      .preview-toggle {
+        padding: 7px 11px;
+        border: 1px solid var(--line-strong);
+        border-radius: 9px;
+        color: var(--muted);
+        background: var(--surface);
+      }
+      .preview-toggle:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+      .content {
+        width: min(920px, calc(100% - 68px));
+        margin: 0 auto;
+        padding: 46px 0 150px;
+      }
+      .page-intro { display: grid; gap: 9px; margin-bottom: 30px; }
+      .eyebrow {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+      }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(27px, 4vw, 38px); letter-spacing: -.04em; line-height: 1.1; }
+      h2 { font-size: 18px; letter-spacing: -.02em; }
+      h3 { font-size: 14px; }
+      .intro-copy { max-width: 650px; color: var(--muted); font-size: 15px; }
+      .command-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        max-width: 720px;
+        padding: 12px 14px;
+        border: 1px solid #d8e4fb;
+        border-radius: 12px;
+        color: #3f5e8d;
+        background: #f5f8ff;
+        font-size: 13px;
+      }
+      .command-note code { padding: 2px 5px; border-radius: 5px; color: #234e9a; background: #e7efff; font-size: 12px; }
+      .variant-surface { min-width: 0; }
+      .section-label { color: var(--faint); font-size: 11px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+      .muted { color: var(--muted); }
+      .small { color: var(--muted); font-size: 12px; }
+      .status-line { color: var(--success); font-size: 12px; font-weight: 650; }
+
+      /* Variant A — one calm vertical sheet. */
+      .sheet {
+        padding: 26px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+      .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding-bottom: 23px; border-bottom: 1px solid var(--line); }
+      .sheet-head-copy { display: grid; gap: 6px; }
+      .sheet-head-copy p { color: var(--muted); }
+      .state-pill { flex: 0 0 auto; padding: 7px 10px; border-radius: 999px; color: var(--success); background: #eaf7f0; font-size: 12px; font-weight: 700; }
+      .sheet-section { display: grid; gap: 15px; padding: 25px 0; border-bottom: 1px solid var(--line); }
+      .sheet-section:last-of-type { border-bottom: 0; }
+      .mode-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+      .mode-choice {
+        display: grid;
+        gap: 5px;
+        min-height: 94px;
+        padding: 13px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        color: var(--muted);
+        background: var(--surface);
+        text-align: left;
+      }
+      .mode-choice:hover { border-color: #9eb8ed; }
+      .mode-choice.selected { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+      .mode-choice strong { color: var(--ink); font-size: 14px; }
+      .mode-choice.selected strong { color: var(--accent-ink); }
+      .mode-choice small { font-size: 11px; line-height: 1.35; }
+      .setting-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 14px 0; }
+      .setting-row + .setting-row { border-top: 1px solid var(--line); }
+      .setting-copy { display: grid; gap: 4px; }
+      .setting-copy strong { font-size: 14px; }
+      .setting-copy span { color: var(--muted); font-size: 12px; }
+      .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
+      .switch input { position: absolute; opacity: 0; }
+      .switch-track { display: block; width: 42px; height: 24px; border-radius: 999px; background: #cbd2da; transition: .15s ease; }
+      .switch-track::after { display: block; width: 18px; height: 18px; margin: 3px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.2); content: ''; transition: .15s ease; }
+      .switch input:checked + .switch-track { background: var(--accent); }
+      .switch input:checked + .switch-track::after { transform: translateX(18px); }
+      .text-field { display: grid; gap: 7px; }
+      .text-field label { font-weight: 650; }
+      .text-field input, .native-select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: 9px; color: var(--ink); background: var(--surface); }
+      .text-field input::placeholder { color: #a1aab5; }
+      .sheet-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 22px; }
+      .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .primary-button, .secondary-button { min-height: 38px; padding: 8px 14px; border-radius: 9px; font-weight: 650; }
+      .primary-button { border: 1px solid var(--accent); color: white; background: var(--accent); }
+      .primary-button:hover { background: #205cc5; }
+      .secondary-button { border: 1px solid var(--line-strong); color: var(--muted); background: white; }
+      .secondary-button:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+      /* Variant B — a settings navigator with a persistent context rail. */
+      .navigator {
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        min-height: 500px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+      .navigator-rail { padding: 22px 12px; border-right: 1px solid var(--line); background: #f8fafc; }
+      .navigator-rail nav { display: grid; gap: 5px; margin-top: 16px; }
+      .rail-link { display: grid; gap: 2px; padding: 11px 12px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; text-align: left; }
+      .rail-link.active { color: var(--accent-ink); background: var(--accent-soft); }
+      .rail-link strong { font-size: 13px; }
+      .rail-link small { font-size: 11px; }
+      .navigator-main { min-width: 0; padding: 28px; }
+      .navigator-main > header { display: flex; justify-content: space-between; gap: 14px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+      .navigator-main header div { display: grid; gap: 5px; }
+      .mode-ladder { display: grid; gap: 0; margin-top: 25px; }
+      .ladder-option { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 16px 10px; border: 0; border-bottom: 1px solid var(--line); color: var(--muted); background: transparent; text-align: left; }
+      .ladder-option:first-child { border-top: 1px solid var(--line); }
+      .ladder-option:hover { background: var(--surface-soft); }
+      .ladder-option.selected { color: var(--accent-ink); background: var(--accent-soft); }
+      .ladder-index { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; color: var(--faint); background: var(--surface-soft); font-size: 11px; font-weight: 750; }
+      .ladder-option.selected .ladder-index { color: white; background: var(--accent); }
+      .ladder-copy { display: grid; gap: 2px; }
+      .ladder-copy strong { color: var(--ink); }
+      .ladder-option.selected .ladder-copy strong { color: var(--accent-ink); }
+      .ladder-copy small { font-size: 11px; }
+      .checkmark { color: var(--accent); font-size: 17px; font-weight: 800; }
+      .navigator-block { display: grid; gap: 14px; margin-top: 26px; }
+      .compact-field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 270px); align-items: center; gap: 18px; padding: 14px 0; border-top: 1px solid var(--line); }
+      .compact-field-copy { display: grid; gap: 3px; }
+      .compact-field-copy strong { font-size: 14px; }
+      .compact-field-copy small { color: var(--muted); font-size: 12px; }
+      .navigator-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 25px; }
+
+      /* Variant C — a guided checklist that makes the order of decisions explicit. */
+      .guided { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(240px, .75fr); gap: 24px; }
+      .guided-main { display: grid; gap: 14px; }
+      .guided-step { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+      .step-number { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--accent-ink); background: var(--accent-soft); font-size: 12px; font-weight: 800; }
+      .step-body { display: grid; gap: 12px; min-width: 0; }
+      .step-body header { display: grid; gap: 4px; }
+      .step-body header strong { font-size: 16px; }
+      .step-body header span { color: var(--muted); font-size: 12px; }
+      .mode-select-large { display: grid; grid-template-columns: minmax(0, 1fr) 120px; align-items: center; gap: 15px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-soft); }
+      .mode-select-large strong { font-size: 13px; }
+      .mode-select-large small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+      .guided-toggle { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-soft); }
+      .guided-toggle > span { display: grid; gap: 3px; }
+      .guided-toggle strong { font-size: 13px; }
+      .guided-toggle small { color: var(--muted); font-size: 11px; }
+      .guided-side { align-self: start; display: grid; gap: 18px; padding: 22px; border: 1px solid #d8e4fb; border-radius: var(--radius); background: #f5f8ff; }
+      .guided-side h2 { color: var(--accent-ink); }
+      .summary-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+      .summary-list li { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 9px; color: #52647f; font-size: 12px; }
+      .summary-list li::before { width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; background: var(--accent); content: ''; }
+      .side-command { padding-top: 16px; border-top: 1px solid #d8e4fb; color: #52647f; font-size: 12px; }
+      .side-command code { display: inline-block; margin-top: 5px; padding: 5px 7px; border-radius: 6px; color: #234e9a; background: white; font-size: 12px; }
+      .guided-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+
+      .prototype-switcher {
+        position: fixed;
+        z-index: 10;
+        right: 50%;
+        bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: min(680px, calc(100% - 28px));
+        padding: 8px 10px;
+        border: 1px solid #303844;
+        border-radius: 14px;
+        color: white;
+        background: #20242b;
+        box-shadow: 0 12px 28px rgba(20, 26, 34, .28);
+        transform: translateX(50%);
+      }
+      .switch-arrow { display: grid; place-items: center; width: 31px; height: 31px; border: 1px solid #4b5665; border-radius: 8px; color: white; background: transparent; font-size: 18px; }
+      .switch-arrow:hover { background: #303844; }
+      .switcher-label { display: grid; flex: 1; gap: 1px; min-width: 0; padding: 0 5px; }
+      .switcher-label strong { font-size: 12px; }
+      .switcher-label span { overflow: hidden; color: #b9c1cc; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+      .switcher-state { padding-left: 8px; border-left: 1px solid #4b5665; color: #b9c1cc; font-size: 11px; white-space: nowrap; }
+      .toast { min-height: 18px; color: var(--success); font-size: 12px; }
+
+      @media (max-width: 760px) {
+        .app-shell { display: block; min-height: 100vh; }
+        .app-sidebar { display: none; }
+        .topbar { min-height: 58px; padding: 0 17px; }
+        .content { width: min(100% - 30px, 600px); padding: 30px 0 135px; }
+        .page-intro { margin-bottom: 21px; }
+        .intro-copy { font-size: 14px; }
+        .sheet { padding: 18px; border-radius: 14px; }
+        .sheet-head { display: grid; gap: 12px; }
+        .sheet-section { padding: 20px 0; }
+        .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .mode-choice { min-height: 84px; }
+        .setting-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+        .sheet-actions, .guided-actions { align-items: stretch; flex-direction: column; }
+        .button-row > * { flex: 1; }
+        .navigator { display: block; border-radius: 14px; }
+        .navigator-rail { padding: 15px 14px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+        .navigator-rail nav { display: flex; overflow-x: auto; margin: 12px -3px 0; padding-bottom: 12px; }
+        .rail-link { min-width: 116px; padding: 9px 10px; }
+        .navigator-main { padding: 20px 18px; }
+        .navigator-main > header { display: grid; }
+        .compact-field { grid-template-columns: 1fr; gap: 9px; }
+        .navigator-footer { justify-content: stretch; }
+        .navigator-footer > * { flex: 1; }
+        .guided { display: block; }
+        .guided-main { gap: 0; }
+        .guided-step { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 19px 0; }
+        .step-number { width: 29px; height: 29px; }
+        .mode-select-large { grid-template-columns: 1fr; gap: 9px; }
+        .guided-side { margin-top: 22px; padding: 18px; border-radius: 14px; }
+        .switcher-state { display: none; }
+      }
+
+      /* The prototype's mobile preview is a constrained shell, not production CSS. */
+      body.mobile-preview .app-shell {
+        display: block;
+        width: min(390px, calc(100% - 32px));
+        min-height: calc(100vh - 32px);
+        margin: 16px auto;
+        overflow: hidden;
+        border: 1px solid var(--line-strong);
+        border-radius: 24px;
+        box-shadow: var(--shadow);
+      }
+      body.mobile-preview .app-sidebar { display: none; }
+      body.mobile-preview .topbar { min-height: 58px; padding: 0 15px; }
+      body.mobile-preview .content { width: calc(100% - 30px); padding-top: 28px; }
+      body.mobile-preview .prototype-switcher { bottom: 10px; }
+      body.mobile-preview .breadcrumb span { display: none; }
+      body.mobile-preview .topbar { gap: 8px; }
+      body.mobile-preview .prototype-badge { padding-inline: 8px; }
+      body.mobile-preview .preview-toggle { padding-inline: 9px; }
+      body.mobile-preview h1 { font-size: 30px; }
+      body.mobile-preview .command-note { font-size: 12px; }
+      body.mobile-preview .sheet { padding: 18px; border-radius: 14px; }
+      body.mobile-preview .sheet-head { display: grid; gap: 12px; }
+      body.mobile-preview .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      body.mobile-preview .mode-choice { min-height: 84px; }
+      body.mobile-preview .sheet-actions,
+      body.mobile-preview .guided-actions { align-items: stretch; flex-direction: column; }
+      body.mobile-preview .button-row > * { flex: 1; }
+      body.mobile-preview .navigator { display: block; border-radius: 14px; }
+      body.mobile-preview .navigator-rail { padding: 15px 14px 0; border-right: 0; border-bottom: 1px solid var(--line); }
+      body.mobile-preview .navigator-rail nav { display: flex; overflow-x: auto; margin: 12px -3px 0; padding-bottom: 12px; }
+      body.mobile-preview .rail-link { min-width: 116px; padding: 9px 10px; }
+      body.mobile-preview .navigator-main { padding: 20px 18px; }
+      body.mobile-preview .navigator-main > header { display: grid; }
+      body.mobile-preview .compact-field { grid-template-columns: 1fr; gap: 9px; }
+      body.mobile-preview .navigator-footer { justify-content: stretch; }
+      body.mobile-preview .navigator-footer > * { flex: 1; }
+      body.mobile-preview .guided { display: block; }
+      body.mobile-preview .guided-main { gap: 0; }
+      body.mobile-preview .guided-step { grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 19px 0; }
+      body.mobile-preview .step-number { width: 29px; height: 29px; }
+      body.mobile-preview .mode-select-large { grid-template-columns: 1fr; gap: 9px; }
+      body.mobile-preview .guided-side { margin-top: 22px; padding: 18px; border-radius: 14px; }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+    <script>
+      // PROTOTYPE — three settings-page directions, switchable via ?variant=a|b|c.
+      const MODES = [
+        ['off', '不注入规则'],
+        ['lite', '轻量提醒'],
+        ['full', '完整规则'],
+        ['ultra', '最强约束'],
+      ]
+      const VARIANTS = {
+        a: { label: 'A · Focus sheet', hint: '单列设置表：先选默认模式，再处理两个例外。', render: renderA },
+        b: { label: 'B · Navigator', hint: '设置导航：行为、启动提示、Agent 分区明确。', render: renderB },
+        c: { label: 'C · Guided setup', hint: '引导清单：把最重要的三个决定按顺序完成。', render: renderC },
+      }
+      const DEFAULTS = { defaultMode: 'full', quietStartup: false, subagentMatcher: '', dirty: false, toast: '' }
+      const state = { ...DEFAULTS }
+      const app = document.querySelector('#app')
+
+      function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char])
+      }
+
+      function variantKey() {
+        const value = new URLSearchParams(location.search).get('variant')
+        return value && VARIANTS[value] ? value : 'a'
+      }
+
+      function isMobilePreview() {
+        return new URLSearchParams(location.search).get('viewport') === 'mobile'
+      }
+
+      function modeCopy(mode) {
+        return MODES.find(item => item[0] === mode)?.[1] ?? ''
+      }
+
+      function stateSummary() {
+        const startup = state.quietStartup ? 'startup hidden' : 'startup visible'
+        const matcher = state.subagentMatcher.trim() ? `agents: ${state.subagentMatcher.trim()}` : 'agents: all'
+        return `${state.defaultMode} · ${startup} · ${matcher}`
+      }
+
+      function shell(content) {
+        const key = variantKey()
+        const current = VARIANTS[key]
+        const mobile = isMobilePreview()
+        return `
+          <div class="app-shell">
+            <aside class="app-sidebar">
+              <div class="brand"><span class="brand-mark">D</span><span>DSH Local Build</span></div>
+              <div>
+                <p class="sidebar-heading">Settings</p>
+                <nav class="sidebar-list" aria-label="Settings navigation">
+                  <button class="sidebar-item"><span>◌</span><span>General</span></button>
+                  <button class="sidebar-item"><span>⌁</span><span>Models</span></button>
+                  <button class="sidebar-item active"><span>✦</span><span>Plugins</span></button>
+                  <button class="sidebar-item"><span>◇</span><span>Agent presets</span></button>
+                </nav>
+              </div>
+              <p class="sidebar-foot">Prototype only<br>State stays in memory.</p>
+            </aside>
+            <section class="app-main">
+              <header class="topbar">
+                <div class="breadcrumb"><strong>Settings</strong><span> / Plugins / Ponytail</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span class="prototype-badge">Prototype</span>
+                  <button class="preview-toggle" data-viewport>${mobile ? 'Desktop preview' : 'Mobile preview'}</button>
+                </div>
+              </header>
+              <div class="content">
+                <div class="page-intro">
+                  <span class="eyebrow">Ponytail plugin</span>
+                  <h1>设置 Ponytail</h1>
+                  <p class="intro-copy">选择新会话的默认规则，并决定启动提示与子 Agent 的继承范围。</p>
+                  <p class="command-note"><span aria-hidden="true">↗</span><span>Composer 不放置 Ponytail 控件。会话中的切换统一使用 <code>/ponytail &lt;mode&gt;</code>，设置页只负责默认值与范围。</span></p>
+                </div>
+                <div class="variant-surface">${content}</div>
+              </div>
+            </section>
+          </div>
+          <nav class="prototype-switcher" aria-label="Prototype variants">
+            <button class="switch-arrow" data-cycle="-1" aria-label="Previous variant">←</button>
+            <div class="switcher-label"><strong>${escapeHtml(current.label)}</strong><span>${escapeHtml(current.hint)}</span></div>
+            <span class="switcher-state" data-state>${escapeHtml(stateSummary())}</span>
+            <button class="switch-arrow" data-cycle="1" aria-label="Next variant">→</button>
+          </nav>`
+      }
+
+      function modeChoices(extraClass = '') {
+        return MODES.map(([mode, description]) => `
+          <button type="button" class="mode-choice ${extraClass} ${state.defaultMode === mode ? 'selected' : ''}" data-mode="${mode}" aria-pressed="${state.defaultMode === mode}">
+            <strong>${mode}</strong><small>${description}</small>
+          </button>`).join('')
+      }
+
+      function switchControl(checked, field) {
+        return `<label class="switch"><input type="checkbox" data-field="${field}" ${checked ? 'checked' : ''}><span class="switch-track"></span></label>`
+      }
+
+      function actions() {
+        return `<div class="sheet-actions"><span class="toast" data-toast>${escapeHtml(state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿'))}</span><div class="button-row"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></div></div>`
+      }
+
+      function renderA() {
+        return `<section class="sheet" aria-labelledby="variant-a-title">
+          <header class="sheet-head"><div class="sheet-head-copy"><span class="section-label">Default behavior</span><h2 id="variant-a-title">新会话从哪里开始</h2><p>默认值只影响没有父会话继承的新会话。</p></div><span class="state-pill">${state.dirty ? '未保存' : '草稿已同步'}</span></header>
+          <section class="sheet-section"><span class="section-label">1 / 默认模式</span><div class="mode-grid" role="group" aria-label="Default mode">${modeChoices()}</div><p class="small">当前：<strong data-current-mode>${state.defaultMode}</strong> · ${modeCopy(state.defaultMode)}</p></section>
+          <section class="sheet-section"><span class="section-label">2 / 启动体验</span>
+            <div class="setting-row"><div class="setting-copy"><strong>隐藏启动提示</strong><span>只隐藏浏览器会话开始时的提示，不改变 Ponytail 行为。</span></div>${switchControl(state.quietStartup, 'quietStartup')}</div>
+          </section>
+          <section class="sheet-section"><span class="section-label">3 / 子 Agent</span>
+            <div class="text-field"><label for="matcher-a">继承匹配器</label><input id="matcher-a" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="留空：匹配所有 agentPreset"><span class="small">大小写不敏感、非锚定匹配；留空时所有子 Agent 继承父会话模式。</span></div>
+          </section>${actions()}
+        </section>`
+      }
+
+      function renderB() {
+        return `<section class="navigator" aria-labelledby="variant-b-title">
+          <aside class="navigator-rail"><span class="section-label">Ponytail</span><nav aria-label="Ponytail settings sections"><button class="rail-link active"><strong>行为</strong><small>默认模式与规则</small></button><button class="rail-link"><strong>启动</strong><small>浏览器提示</small></button><button class="rail-link"><strong>Agent</strong><small>继承范围</small></button></nav></aside>
+          <div class="navigator-main"><header><div><span class="section-label">Behavior</span><h2 id="variant-b-title">默认规则</h2><p class="muted">把每个设置放在它影响的行为旁边。</p></div><span class="status-line" data-toast>${escapeHtml(state.toast || (state.dirty ? '未保存' : '已同步'))}</span></header>
+            <div class="mode-ladder" role="group" aria-label="Default mode">${MODES.map(([mode, description], index) => `<button type="button" class="ladder-option ${state.defaultMode === mode ? 'selected' : ''}" data-mode="${mode}" aria-pressed="${state.defaultMode === mode}"><span class="ladder-index">0${index + 1}</span><span class="ladder-copy"><strong>${mode}</strong><small>${description}</small></span><span class="checkmark">${state.defaultMode === mode ? '✓' : ''}</span></button>`).join('')}</div>
+            <div class="navigator-block"><span class="section-label">Other sections at a glance</span>
+              <div class="compact-field"><div class="compact-field-copy"><strong>启动提示</strong><small>只影响浏览器会话开始时是否显示提示。</small></div>${switchControl(state.quietStartup, 'quietStartup')}</div>
+              <div class="compact-field"><div class="compact-field-copy"><strong>子 Agent 匹配器</strong><small>留空继承全部；填写文本匹配 agentPreset。</small></div><input class="native-select" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="例如 review"></div>
+            </div>
+            <footer class="navigator-footer"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></footer>
+          </div>
+        </section>`
+      }
+
+      function renderC() {
+        return `<section class="guided" aria-labelledby="variant-c-title"><div class="guided-main">
+          <header><span class="section-label">Three decisions</span><h2 id="variant-c-title">三步完成 Ponytail 设置</h2><p class="muted">新用户先完成最重要的选择，高级范围最后处理。</p></header>
+          <div class="guided-step"><span class="step-number">01</span><div class="step-body"><header><strong>选择默认模式</strong><span>新会话没有父会话可继承时使用。</span></header><div class="mode-select-large"><div><strong>${state.defaultMode}</strong><small>${modeCopy(state.defaultMode)}</small></div><select class="native-select" data-field="defaultMode" aria-label="Default mode">${MODES.map(([mode]) => `<option value="${mode}" ${state.defaultMode === mode ? 'selected' : ''}>${mode}</option>`).join('')}</select></div></div></div>
+          <div class="guided-step"><span class="step-number">02</span><div class="step-body"><header><strong>决定启动提示</strong><span>仅控制提示文案的可见性。</span></header><div class="guided-toggle"><span><strong>${state.quietStartup ? '启动时保持安静' : '启动时显示提示'}</strong><small>不会关闭命令或系统提示规则。</small></span>${switchControl(state.quietStartup, 'quietStartup')}</div></div></div>
+          <div class="guided-step"><span class="step-number">03</span><div class="step-body"><header><strong>限定子 Agent 范围</strong><span>只填写需要继承 Ponytail 的 agentPreset 片段。</span></header><input class="native-select" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="留空匹配所有子 Agent"><span class="small">例如：review；匹配大小写不敏感且不要求完整相等。</span></div></div>
+          <div class="guided-actions"><span class="toast" data-toast>${escapeHtml(state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿'))}</span><div class="button-row"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></div></div>
+        </div><aside class="guided-side"><span class="section-label">At a glance</span><h2>它会如何运行</h2><ul class="summary-list"><li>新会话使用 <strong data-current-mode>${state.defaultMode}</strong> 模式。</li><li>${state.quietStartup ? '启动提示被隐藏。' : '浏览器启动时显示简短提示。'}</li><li>${state.subagentMatcher.trim() ? `只匹配 “${escapeHtml(state.subagentMatcher.trim())}”。` : '所有子 Agent 都可继承父会话模式。'}</li></ul><div class="side-command">会话内切换<br><code>/ponytail &lt;mode&gt;</code></div></aside></section>`
+      }
+
+      function sync() {
+        app.querySelectorAll('[data-mode]').forEach(button => {
+          const selected = button.dataset.mode === state.defaultMode
+          button.classList.toggle('selected', selected)
+          button.setAttribute('aria-pressed', String(selected))
+          const checkmark = button.querySelector('.checkmark')
+          if (checkmark) checkmark.textContent = selected ? '✓' : ''
+        })
+        app.querySelectorAll('[data-field="defaultMode"]').forEach(control => { control.value = state.defaultMode })
+        app.querySelectorAll('[data-field="quietStartup"]').forEach(control => { control.checked = state.quietStartup })
+        app.querySelectorAll('[data-field="subagentMatcher"]').forEach(control => { if (document.activeElement !== control) control.value = state.subagentMatcher })
+        app.querySelectorAll('[data-current-mode]').forEach(node => { node.textContent = state.defaultMode })
+        app.querySelectorAll('[data-toast]').forEach(node => { node.textContent = state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿') })
+        app.querySelectorAll('[data-state]').forEach(node => { node.textContent = stateSummary() })
+      }
+
+      function setVariant(next) {
+        const url = new URL(location.href)
+        url.searchParams.set('variant', next)
+        history.replaceState(null, '', url)
+        state.toast = ''
+        render()
+      }
+
+      function cycle(delta) {
+        const keys = Object.keys(VARIANTS)
+        const index = keys.indexOf(variantKey())
+        setVariant(keys[(index + delta + keys.length) % keys.length])
+      }
+
+      function toggleViewport() {
+        const url = new URL(location.href)
+        if (isMobilePreview()) url.searchParams.delete('viewport')
+        else url.searchParams.set('viewport', 'mobile')
+        history.replaceState(null, '', url)
+        render()
+      }
+
+      function bind() {
+        app.querySelectorAll('[data-cycle]').forEach(button => button.addEventListener('click', () => cycle(Number(button.dataset.cycle))))
+        app.querySelector('[data-viewport]')?.addEventListener('click', toggleViewport)
+        app.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => { state.defaultMode = button.dataset.mode; state.dirty = true; state.toast = ''; sync() }))
+        app.querySelectorAll('[data-field]').forEach(control => control.addEventListener('input', () => {
+          const field = control.dataset.field
+          state[field] = control.type === 'checkbox' ? control.checked : control.value
+          state.dirty = true
+          state.toast = ''
+          sync()
+        }))
+        app.querySelectorAll('[data-save]').forEach(button => button.addEventListener('click', () => { state.dirty = false; state.toast = '已保存（原型内存状态）'; sync() }))
+        app.querySelectorAll('[data-reset]').forEach(button => button.addEventListener('click', () => { state.defaultMode = DEFAULTS.defaultMode; state.quietStartup = DEFAULTS.quietStartup; state.subagentMatcher = DEFAULTS.subagentMatcher; state.dirty = false; state.toast = '已恢复默认值'; sync() }))
+      }
+
+      function render() {
+        const current = VARIANTS[variantKey()]
+        document.body.classList.toggle('mobile-preview', isMobilePreview())
+        app.innerHTML = shell(current.render())
+        bind()
+      }
+
+      window.addEventListener('keydown', event => {
+        const target = event.target
+        if (target instanceof HTMLElement && (target.matches('input, textarea, select, [contenteditable="true"]'))) return
+        if (event.key === 'ArrowLeft') { event.preventDefault(); cycle(-1) }
+        if (event.key === 'ArrowRight') { event.preventDefault(); cycle(1) }
+      })
+      render()
+    </script>
+  </body>
+</html>
