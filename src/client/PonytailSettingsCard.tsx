@@ -144,47 +144,6 @@ export function PonytailSettingsCard({ useSettings, save, reset, t }: PonytailSe
             </div>
           </div>
 
-          <div className={css.sectionBlock}>
-            <p className={css.sectionLabel}>{t('startupSection')}</p>
-            <label className={css.settingRow}>
-              <span className={css.settingCopy}>
-                <strong>{t('quietStartup')}</strong>
-                <span>{t('quietStartupHint')}</span>
-              </span>
-              <span className={css.switch}>
-                <input
-                  className={css.switchInput}
-                  type="checkbox"
-                  checked={draft.quietStartup}
-                  disabled={disabled}
-                  aria-label={t('quietStartup')}
-                  onChange={event => { edit('quietStartup', event.target.checked) }}
-                />
-                <span className={css.switchTrack} aria-hidden="true" />
-              </span>
-            </label>
-          </div>
-
-          <div className={css.sectionBlock}>
-            <div className={css.sectionHeader}>
-              <p className={css.sectionLabel}>{t('agentsSection')}</p>
-              <h3 className={css.sectionTitle}>{t('subagentMatcher')}</h3>
-              <p className={css.sectionHint} id="ponytail-subagent-hint">{t('subagentMatcherHint')}</p>
-            </div>
-            <label className={css.textField}>
-              <span className={css.fieldLabel}>{t('subagentMatcher')}</span>
-              <input
-                className={css.textInput}
-                type="text"
-                value={draft.subagentMatcher}
-                placeholder={t('subagentMatcherPlaceholder')}
-                disabled={disabled}
-                aria-describedby="ponytail-subagent-hint"
-                onChange={event => { edit('subagentMatcher', event.target.value) }}
-              />
-            </label>
-          </div>
-
           <footer className={css.cardFooter}>
             <div className={css.footerStatus}>
               {error === null ? <span>{dirty ? t('unsaved') : t('synced')}</span> : <span className={css.error} role="alert" title={error}>{error}</span>}

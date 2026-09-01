@@ -8,7 +8,8 @@ describe('ponytail settings precedence', () => {
       dsh: { defaultMode: 'ultra', hideStatus: true, quietStartup: true, subagentMatcher: 'worker' },
       upstream: { defaultMode: 'off', hideStatus: true, quietStartup: false, subagentMatcher: 'explore' },
     })).toEqual({ defaultMode: 'lite', hideStatus: false, quietStartup: true, subagentMatcher: 'worker' })
-    expect(DEFAULT_SETTINGS).toEqual({ defaultMode: 'full', hideStatus: false, quietStartup: false, subagentMatcher: '' })
+    expect(DEFAULT_SETTINGS).toEqual({ defaultMode: 'full', hideStatus: false, quietStartup: true, subagentMatcher: '' })
+    expect(resolveSettings({ env: {} }).quietStartup).toBe(true)
   })
 
   it('validates the matcher at resolution time', () => {

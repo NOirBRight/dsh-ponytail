@@ -38,9 +38,11 @@
     "pack:check": "node scripts/check-pack.mjs",
     "loader:smoke": "node scripts/check-loader.mjs",
     "client-loader:smoke": "node scripts/check-client-loader.mjs",
+    "snapshot:smoke": "node scripts/check-snapshot.mjs",
+    "snapshot:record": "pnpm run build && DSH_SNAPSHOT=record node scripts/check-snapshot.mjs",
     "install:smoke": "node scripts/check-install.mjs",
     "prototype:settings": "node prototype/serve.mjs",
-    "check": "pnpm run test && pnpm run typecheck && pnpm run build && pnpm run loader:smoke && pnpm run client-loader:smoke && pnpm run pack:check && pnpm run install:smoke"
+    "check": "pnpm run test && pnpm run typecheck && pnpm run build && pnpm run loader:smoke && pnpm run client-loader:smoke && pnpm run snapshot:smoke && pnpm run pack:check && pnpm run install:smoke"
   },
   "engines": {
     "node": ">=22.19.0"

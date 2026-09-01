@@ -25,6 +25,18 @@ function settingsProps(value = DEFAULT_SETTINGS): PonytailSettingsCardProps {
 describe('Ponytail browser surfaces', () => {
   it('keeps Chinese and English dictionaries in sync', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(zh).sort())
+    expect(zh.settingsDescription).toBe('选择新会话的默认规则。')
+    expect(en.settingsDescription).toBe('Choose the default mode for new sessions.')
+    expect(zh).not.toHaveProperty('agentsSection')
+    expect(zh).not.toHaveProperty('subagentMatcher')
+    expect(en).not.toHaveProperty('agentsSection')
+    expect(en).not.toHaveProperty('subagentMatcher')
+    expect(zh).not.toHaveProperty('startupSection')
+    expect(zh).not.toHaveProperty('quietStartup')
+    expect(zh).not.toHaveProperty('quietStartupHint')
+    expect(en).not.toHaveProperty('startupSection')
+    expect(en).not.toHaveProperty('quietStartup')
+    expect(en).not.toHaveProperty('quietStartupHint')
   })
 
   it('formats the localized startup notice without changing the mode', () => {

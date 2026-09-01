@@ -10,7 +10,7 @@
 - `ponytail/mode` 事件写入完整的当前模式和 pending 模式；`ponytail` 投影只暴露浏览器需要的 `mode` 与 `pending`。恢复、清理和 compact 都从已有事件前缀继续折叠。
 - 命令在 Agent 运行中只写 pending，下一次被接受的 step 才提交；自然语言关闭在当前请求进入模型前提交 `off`。
 - 子 Agent 在创建时读取父会话投影。`subagentMatcher` 只限制带 `agentPreset` 的子 Agent；没有 preset 时保持上游的 fail-open 行为。
-- 浏览器面通过 `settings.plugin.item` 公开默认折叠、点击展开的 Settings → Plugins 卡片，并通过 `shell.overlay` 显示一次性的会话启动提示。模式切换由 `/ponytail` 命令完成，浏览器不在 composer 中复制一套会话状态。
+- 浏览器面通过 `settings.plugin.item` 公开默认折叠、点击展开的 Settings → Plugins 卡片，只编辑默认模式；启动提示默认隐藏，子 Agent 继承保持自动生效，高级 matcher 仍由配置层兼容。浏览器通过 `shell.overlay` 显示一次性的会话启动提示。模式切换由 `/ponytail` 命令完成，浏览器不在 composer 中复制一套会话状态。
 
 ## 会话事件兼容
 
@@ -20,7 +20,7 @@ alpha.2/alpha.3 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ig
 
 设置解析顺序固定为 `PONYTAIL_*` 环境变量 → DSH Settings → 上游 `~/.config/ponytail/config.json` → 插件默认值。环境变量在每次读取时覆盖其他层，因此外部部署可以锁定策略；DSH Settings 仍负责 GUI 保存和会话默认值。
 
-`hideStatus` 是保留给旧配置的兼容字段，不再控制浏览器 UI；`quietStartup` 只隐藏浏览器启动提示。两者不改变模式、命令、skill 或系统提示。
+`hideStatus` 是保留给旧配置的兼容字段，不再控制浏览器 UI；`quietStartup` 默认隐藏浏览器启动提示，也可由环境变量或配置文件显式关闭。两者不改变模式、命令、skill 或系统提示。
 
 ## 上游边界
 

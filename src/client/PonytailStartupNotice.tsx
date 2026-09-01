@@ -52,7 +52,7 @@ export function PonytailStartupNotice({ useSessions, settings, t }: PonytailStar
   })
   const settingsSnapshot = useSyncExternalStore(settings.subscribe, settings.getSnapshot, settings.getSnapshot)
   const settingsReady = settingsSnapshot.status !== 'loading'
-  const quietStartup = settingsSnapshot.value?.quietStartup ?? false
+  const quietStartup = settingsSnapshot.value?.quietStartup ?? true
   const seenSession = useRef<typeof currentId>(undefined)
   const sequence = useRef(0)
   const [notice, setNotice] = useState<{ seq: number; text: string } | null>(null)

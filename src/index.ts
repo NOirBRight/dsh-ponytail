@@ -44,7 +44,7 @@ const PONYTAIL_MODE_EVENT = 'ponytail/mode'
 export const ponytailSettingsSchema = Schema.object({
   defaultMode: Schema.union(PONYTAIL_MODES.map(mode => Schema.const(mode))).default('full').description('Default Ponytail mode for new sessions.'),
   hideStatus: Schema.boolean().default(false).description('Legacy compatibility value; Ponytail no longer injects a composer control.'),
-  quietStartup: Schema.boolean().default(false).description('Hide the browser session-start notice.'),
+  quietStartup: Schema.boolean().default(true).description('Hide the browser session-start notice by default.'),
   subagentMatcher: Schema.string().default('').description('Case-insensitive unanchored regular expression over agentPreset.'),
 })
 

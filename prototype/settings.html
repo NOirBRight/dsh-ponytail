@@ -202,21 +202,7 @@
       .mode-choice strong { color: var(--ink); font-size: 14px; }
       .mode-choice.selected strong { color: var(--accent-ink); }
       .mode-choice small { font-size: 11px; line-height: 1.35; }
-      .setting-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 14px 0; }
-      .setting-row + .setting-row { border-top: 1px solid var(--line); }
-      .setting-copy { display: grid; gap: 4px; }
-      .setting-copy strong { font-size: 14px; }
-      .setting-copy span { color: var(--muted); font-size: 12px; }
-      .switch { position: relative; width: 42px; height: 24px; flex: 0 0 auto; }
-      .switch input { position: absolute; opacity: 0; }
-      .switch-track { display: block; width: 42px; height: 24px; border-radius: 999px; background: #cbd2da; transition: .15s ease; }
-      .switch-track::after { display: block; width: 18px; height: 18px; margin: 3px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,.2); content: ''; transition: .15s ease; }
-      .switch input:checked + .switch-track { background: var(--accent); }
-      .switch input:checked + .switch-track::after { transform: translateX(18px); }
-      .text-field { display: grid; gap: 7px; }
-      .text-field label { font-weight: 650; }
-      .text-field input, .native-select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: 9px; color: var(--ink); background: var(--surface); }
-      .text-field input::placeholder { color: #a1aab5; }
+      .native-select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line-strong); border-radius: 9px; color: var(--ink); background: var(--surface); }
       .sheet-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 22px; }
       .button-row { display: flex; flex-wrap: wrap; gap: 8px; }
       .primary-button, .secondary-button { min-height: 38px; padding: 8px 14px; border-radius: 9px; font-weight: 650; }
@@ -257,11 +243,6 @@
       .ladder-option.selected .ladder-copy strong { color: var(--accent-ink); }
       .ladder-copy small { font-size: 11px; }
       .checkmark { color: var(--accent); font-size: 17px; font-weight: 800; }
-      .navigator-block { display: grid; gap: 14px; margin-top: 26px; }
-      .compact-field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 270px); align-items: center; gap: 18px; padding: 14px 0; border-top: 1px solid var(--line); }
-      .compact-field-copy { display: grid; gap: 3px; }
-      .compact-field-copy strong { font-size: 14px; }
-      .compact-field-copy small { color: var(--muted); font-size: 12px; }
       .navigator-footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 25px; }
 
       /* Variant C — a guided checklist that makes the order of decisions explicit. */
@@ -276,10 +257,6 @@
       .mode-select-large { display: grid; grid-template-columns: minmax(0, 1fr) 120px; align-items: center; gap: 15px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-soft); }
       .mode-select-large strong { font-size: 13px; }
       .mode-select-large small { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
-      .guided-toggle { display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-soft); }
-      .guided-toggle > span { display: grid; gap: 3px; }
-      .guided-toggle strong { font-size: 13px; }
-      .guided-toggle small { color: var(--muted); font-size: 11px; }
       .guided-side { align-self: start; display: grid; gap: 18px; padding: 22px; border: 1px solid #d8e4fb; border-radius: var(--radius); background: #f5f8ff; }
       .guided-side h2 { color: var(--accent-ink); }
       .summary-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
@@ -326,7 +303,6 @@
         .sheet-section { padding: 20px 0; }
         .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .mode-choice { min-height: 84px; }
-        .setting-row { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
         .sheet-actions, .guided-actions { align-items: stretch; flex-direction: column; }
         .button-row > * { flex: 1; }
         .navigator { display: block; border-radius: 14px; }
@@ -335,7 +311,6 @@
         .rail-link { min-width: 116px; padding: 9px 10px; }
         .navigator-main { padding: 20px 18px; }
         .navigator-main > header { display: grid; }
-        .compact-field { grid-template-columns: 1fr; gap: 9px; }
         .navigator-footer { justify-content: stretch; }
         .navigator-footer > * { flex: 1; }
         .guided { display: block; }
@@ -381,7 +356,6 @@
       body.mobile-preview .rail-link { min-width: 116px; padding: 9px 10px; }
       body.mobile-preview .navigator-main { padding: 20px 18px; }
       body.mobile-preview .navigator-main > header { display: grid; }
-      body.mobile-preview .compact-field { grid-template-columns: 1fr; gap: 9px; }
       body.mobile-preview .navigator-footer { justify-content: stretch; }
       body.mobile-preview .navigator-footer > * { flex: 1; }
       body.mobile-preview .guided { display: block; }
@@ -403,11 +377,11 @@
         ['ultra', '最强约束'],
       ]
       const VARIANTS = {
-        a: { label: 'A · Focus sheet', hint: '单列设置表：先选默认模式，再处理两个例外。', render: renderA },
-        b: { label: 'B · Navigator', hint: '设置导航：行为、启动提示、Agent 分区明确。', render: renderB },
-        c: { label: 'C · Guided setup', hint: '引导清单：把最重要的三个决定按顺序完成。', render: renderC },
+        a: { label: 'A · Focus sheet', hint: '单列设置表：只选新会话默认模式。', render: renderA },
+        b: { label: 'B · Navigator', hint: '设置导航：聚焦新会话默认模式。', render: renderB },
+        c: { label: 'C · Guided setup', hint: '引导清单：把最重要的两个决定按顺序完成。', render: renderC },
       }
-      const DEFAULTS = { defaultMode: 'full', quietStartup: false, subagentMatcher: '', dirty: false, toast: '' }
+      const DEFAULTS = { defaultMode: 'full', dirty: false, toast: '' }
       const state = { ...DEFAULTS }
       const app = document.querySelector('#app')
 
@@ -429,9 +403,7 @@
       }
 
       function stateSummary() {
-        const startup = state.quietStartup ? 'startup hidden' : 'startup visible'
-        const matcher = state.subagentMatcher.trim() ? `agents: ${state.subagentMatcher.trim()}` : 'agents: all'
-        return `${state.defaultMode} · ${startup} · ${matcher}`
+        return state.defaultMode
       }
 
       function shell(content) {
@@ -465,8 +437,8 @@
                 <div class="page-intro">
                   <span class="eyebrow">Ponytail plugin</span>
                   <h1>设置 Ponytail</h1>
-                  <p class="intro-copy">选择新会话的默认规则，并决定启动提示与子 Agent 的继承范围。</p>
-                  <p class="command-note"><span aria-hidden="true">↗</span><span>Composer 不放置 Ponytail 控件。会话中的切换统一使用 <code>/ponytail &lt;mode&gt;</code>，设置页只负责默认值与范围。</span></p>
+                  <p class="intro-copy">选择新会话的默认规则。</p>
+                  <p class="command-note"><span aria-hidden="true">↗</span><span>Composer 不放置 Ponytail 控件。会话中的切换统一使用 <code>/ponytail &lt;mode&gt;</code>，设置页只负责默认值。</span></p>
                 </div>
                 <div class="variant-surface">${content}</div>
               </div>
@@ -487,10 +459,6 @@
           </button>`).join('')
       }
 
-      function switchControl(checked, field) {
-        return `<label class="switch"><input type="checkbox" data-field="${field}" ${checked ? 'checked' : ''}><span class="switch-track"></span></label>`
-      }
-
       function actions() {
         return `<div class="sheet-actions"><span class="toast" data-toast>${escapeHtml(state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿'))}</span><div class="button-row"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></div></div>`
       }
@@ -499,24 +467,15 @@
         return `<section class="sheet" aria-labelledby="variant-a-title">
           <header class="sheet-head"><div class="sheet-head-copy"><span class="section-label">Default behavior</span><h2 id="variant-a-title">新会话从哪里开始</h2><p>默认值只影响没有父会话继承的新会话。</p></div><span class="state-pill">${state.dirty ? '未保存' : '草稿已同步'}</span></header>
           <section class="sheet-section"><span class="section-label">1 / 默认模式</span><div class="mode-grid" role="group" aria-label="Default mode">${modeChoices()}</div><p class="small">当前：<strong data-current-mode>${state.defaultMode}</strong> · ${modeCopy(state.defaultMode)}</p></section>
-          <section class="sheet-section"><span class="section-label">2 / 启动体验</span>
-            <div class="setting-row"><div class="setting-copy"><strong>隐藏启动提示</strong><span>只隐藏浏览器会话开始时的提示，不改变 Ponytail 行为。</span></div>${switchControl(state.quietStartup, 'quietStartup')}</div>
-          </section>
-          <section class="sheet-section"><span class="section-label">3 / 子 Agent</span>
-            <div class="text-field"><label for="matcher-a">继承匹配器</label><input id="matcher-a" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="留空：匹配所有 agentPreset"><span class="small">大小写不敏感、非锚定匹配；留空时所有子 Agent 继承父会话模式。</span></div>
-          </section>${actions()}
+          ${actions()}
         </section>`
       }
 
       function renderB() {
         return `<section class="navigator" aria-labelledby="variant-b-title">
-          <aside class="navigator-rail"><span class="section-label">Ponytail</span><nav aria-label="Ponytail settings sections"><button class="rail-link active"><strong>行为</strong><small>默认模式与规则</small></button><button class="rail-link"><strong>启动</strong><small>浏览器提示</small></button><button class="rail-link"><strong>Agent</strong><small>继承范围</small></button></nav></aside>
+          <aside class="navigator-rail"><span class="section-label">Ponytail</span><nav aria-label="Ponytail settings sections"><button class="rail-link active"><strong>行为</strong><small>默认模式与规则</small></button></nav></aside>
           <div class="navigator-main"><header><div><span class="section-label">Behavior</span><h2 id="variant-b-title">默认规则</h2><p class="muted">把每个设置放在它影响的行为旁边。</p></div><span class="status-line" data-toast>${escapeHtml(state.toast || (state.dirty ? '未保存' : '已同步'))}</span></header>
             <div class="mode-ladder" role="group" aria-label="Default mode">${MODES.map(([mode, description], index) => `<button type="button" class="ladder-option ${state.defaultMode === mode ? 'selected' : ''}" data-mode="${mode}" aria-pressed="${state.defaultMode === mode}"><span class="ladder-index">0${index + 1}</span><span class="ladder-copy"><strong>${mode}</strong><small>${description}</small></span><span class="checkmark">${state.defaultMode === mode ? '✓' : ''}</span></button>`).join('')}</div>
-            <div class="navigator-block"><span class="section-label">Other sections at a glance</span>
-              <div class="compact-field"><div class="compact-field-copy"><strong>启动提示</strong><small>只影响浏览器会话开始时是否显示提示。</small></div>${switchControl(state.quietStartup, 'quietStartup')}</div>
-              <div class="compact-field"><div class="compact-field-copy"><strong>子 Agent 匹配器</strong><small>留空继承全部；填写文本匹配 agentPreset。</small></div><input class="native-select" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="例如 review"></div>
-            </div>
             <footer class="navigator-footer"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></footer>
           </div>
         </section>`
@@ -524,12 +483,10 @@
 
       function renderC() {
         return `<section class="guided" aria-labelledby="variant-c-title"><div class="guided-main">
-          <header><span class="section-label">Three decisions</span><h2 id="variant-c-title">三步完成 Ponytail 设置</h2><p class="muted">新用户先完成最重要的选择，高级范围最后处理。</p></header>
+          <header><span class="section-label">One decision</span><h2 id="variant-c-title">一步完成 Ponytail 设置</h2><p class="muted">新会话默认使用什么规则？</p></header>
           <div class="guided-step"><span class="step-number">01</span><div class="step-body"><header><strong>选择默认模式</strong><span>新会话没有父会话可继承时使用。</span></header><div class="mode-select-large"><div><strong>${state.defaultMode}</strong><small>${modeCopy(state.defaultMode)}</small></div><select class="native-select" data-field="defaultMode" aria-label="Default mode">${MODES.map(([mode]) => `<option value="${mode}" ${state.defaultMode === mode ? 'selected' : ''}>${mode}</option>`).join('')}</select></div></div></div>
-          <div class="guided-step"><span class="step-number">02</span><div class="step-body"><header><strong>决定启动提示</strong><span>仅控制提示文案的可见性。</span></header><div class="guided-toggle"><span><strong>${state.quietStartup ? '启动时保持安静' : '启动时显示提示'}</strong><small>不会关闭命令或系统提示规则。</small></span>${switchControl(state.quietStartup, 'quietStartup')}</div></div></div>
-          <div class="guided-step"><span class="step-number">03</span><div class="step-body"><header><strong>限定子 Agent 范围</strong><span>只填写需要继承 Ponytail 的 agentPreset 片段。</span></header><input class="native-select" data-field="subagentMatcher" value="${escapeHtml(state.subagentMatcher)}" placeholder="留空匹配所有子 Agent"><span class="small">例如：review；匹配大小写不敏感且不要求完整相等。</span></div></div>
           <div class="guided-actions"><span class="toast" data-toast>${escapeHtml(state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿'))}</span><div class="button-row"><button class="secondary-button" type="button" data-reset>恢复默认</button><button class="primary-button" type="button" data-save>保存设置</button></div></div>
-        </div><aside class="guided-side"><span class="section-label">At a glance</span><h2>它会如何运行</h2><ul class="summary-list"><li>新会话使用 <strong data-current-mode>${state.defaultMode}</strong> 模式。</li><li>${state.quietStartup ? '启动提示被隐藏。' : '浏览器启动时显示简短提示。'}</li><li>${state.subagentMatcher.trim() ? `只匹配 “${escapeHtml(state.subagentMatcher.trim())}”。` : '所有子 Agent 都可继承父会话模式。'}</li></ul><div class="side-command">会话内切换<br><code>/ponytail &lt;mode&gt;</code></div></aside></section>`
+        </div><aside class="guided-side"><span class="section-label">At a glance</span><h2>它会如何运行</h2><ul class="summary-list"><li>新会话使用 <strong data-current-mode>${state.defaultMode}</strong> 模式。</li></ul><div class="side-command">会话内切换<br><code>/ponytail &lt;mode&gt;</code></div></aside></section>`
       }
 
       function sync() {
@@ -541,8 +498,6 @@
           if (checkmark) checkmark.textContent = selected ? '✓' : ''
         })
         app.querySelectorAll('[data-field="defaultMode"]').forEach(control => { control.value = state.defaultMode })
-        app.querySelectorAll('[data-field="quietStartup"]').forEach(control => { control.checked = state.quietStartup })
-        app.querySelectorAll('[data-field="subagentMatcher"]').forEach(control => { if (document.activeElement !== control) control.value = state.subagentMatcher })
         app.querySelectorAll('[data-current-mode]').forEach(node => { node.textContent = state.defaultMode })
         app.querySelectorAll('[data-toast]').forEach(node => { node.textContent = state.toast || (state.dirty ? '有未保存的修改' : '已同步到当前草稿') })
         app.querySelectorAll('[data-state]').forEach(node => { node.textContent = stateSummary() })
@@ -582,7 +537,7 @@
           sync()
         }))
         app.querySelectorAll('[data-save]').forEach(button => button.addEventListener('click', () => { state.dirty = false; state.toast = '已保存（原型内存状态）'; sync() }))
-        app.querySelectorAll('[data-reset]').forEach(button => button.addEventListener('click', () => { state.defaultMode = DEFAULTS.defaultMode; state.quietStartup = DEFAULTS.quietStartup; state.subagentMatcher = DEFAULTS.subagentMatcher; state.dirty = false; state.toast = '已恢复默认值'; sync() }))
+        app.querySelectorAll('[data-reset]').forEach(button => button.addEventListener('click', () => { state.defaultMode = DEFAULTS.defaultMode; state.dirty = false; state.toast = '已恢复默认值'; sync() }))
       }
 
       function render() {

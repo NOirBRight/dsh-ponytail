@@ -12,7 +12,7 @@ export interface PonytailSettings {
   defaultMode: PonytailMode
   /** Legacy compatibility value retained for existing Ponytail configuration. */
   hideStatus: boolean
-  /** Suppress only the browser session-start notice. */
+  /** Suppress only the browser session-start notice; enabled by default. */
   quietStartup: boolean
   /** Unanchored, case-insensitive matcher over `agentPreset`. Empty means all. */
   subagentMatcher: string
@@ -25,7 +25,7 @@ export type PonytailSettingsLayer = Partial<PonytailSettings>
 export const DEFAULT_SETTINGS: PonytailSettings = {
   defaultMode: 'full',
   hideStatus: false,
-  quietStartup: false,
+  quietStartup: true,
   subagentMatcher: '',
 }
 
