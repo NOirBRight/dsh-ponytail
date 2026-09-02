@@ -29,7 +29,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** Locale namespace owned by this browser half. */
 export const NS = 'ponytail'
 
-/** Browser dependencies supplied by alpha.3. */
+/** Browser dependencies supplied by Alpha.4. */
 export const inject = [
   'slots', 'locale', 'settingsScope', 'sessions',
 ]

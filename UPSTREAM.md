@@ -6,14 +6,13 @@ The upstream skills are copied into `skills/` so an installed DSH bundle has no 
 
 To update the copied skills in a development checkout, set `PONYTAIL_SOURCE` to a checked-out upstream repository and run `node scripts/sync-upstream.mjs`. Review the resulting skill-content diff and run the complete check before opening a dependency-update PR.
 
-The DSH compatibility target for this repository is `dsh-v0.1.2-alpha.3` at
-commit `dd6322d604e00eec1ba5e0c8541159906a21094a`.
+The DSH compatibility target for this repository is `dsh-v0.1.2-alpha.4` at
+commit `4e84901e6471b79ec0338099867ebb4606d12bb5`.
 
-The 3082 lab currently runs alpha.2. `src/session-catalog.ts` resolves the
-Host's profile copy of `@deepseek-ai/dsh-session` before registering the
-downstream `ponytail/mode` event, so existing alpha.2 logs can be recovered
-without changing the DeepSeek Harness checkout. This is a lab compatibility
-layer; alpha.3 remains the package peer target.
+The 3082 lab runs Alpha.4 on a fresh profile. `src/session-catalog.ts` resolves
+the Host's profile copy of `@deepseek-ai/dsh-session` before registering the
+downstream `ponytail/mode` event. Historical Alpha.2 logs remain in an
+isolated archive and are not resumed by Alpha.4.
 
 Pinned SHA-256 values for the copied skills:
 

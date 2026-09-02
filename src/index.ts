@@ -68,7 +68,7 @@ export class PonytailController extends Service {
    */
   constructor(ctx: Context, _config: Record<string, never> = {}) {
     super(ctx, 'ponytail')
-    // DSH alpha.2/alpha.3 intentionally keeps the core persistence catalog
+    // DSH Alpha.4 intentionally keeps the core persistence catalog
     // static. Register this required plugin event in the Host's shared catalog
     // while the plugin is loaded so session recovery does not reject its logs.
     ctx.effect(
@@ -148,7 +148,7 @@ export class PonytailController extends Service {
     // Resume, clear, and compact reuse an existing session log. A mode event
     // in the seeded prefix is already authoritative; only a fresh startup
     // adds the child-inheritance/default event over that prefix.
-    const hasMode = session.events.some(event => event.type === PONYTAIL_MODE_EVENT)
+    const hasMode = session.snapshotEvents().some(event => event.type === PONYTAIL_MODE_EVENT)
     if (source !== 'startup' && hasMode) return
 
     const parentId = session.header.parentSession

@@ -1,6 +1,6 @@
 # dsh-ponytail
 
-`dsh-ponytail` 是面向 DeepSeek Harness alpha.3 的独立 bundle，把 Ponytail 的最小实现策略、六个技能、会话模式、命令、子 Agent 继承和 Web GUI 设置接入 DSH。它不修改也不复制 DeepSeek Harness Core。
+`dsh-ponytail` 是面向 DeepSeek Harness Alpha.4 的独立 bundle，把 Ponytail 的最小实现策略、六个技能、会话模式、命令、子 Agent 继承和 Web GUI 设置接入 DSH。它不修改也不复制 DeepSeek Harness Core。
 
 ## 安装
 
@@ -24,7 +24,7 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 
 第一阶段只在 `~/.dsh-lab` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
-此 bundle 固定兼容 `dsh-v0.1.2-alpha.3` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
+此 bundle 固定兼容 `dsh-v0.1.2-alpha.4` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
 仓库名称为 `dsh-ponytail`；发行包使用 `dsh-ponytail-skills`，因为不带 scope 的 `dsh-ponytail` npm 名称已由其他维护者占用。当前分发渠道是 GitHub release；后续配置 `NPM_TOKEN` 后即可启用 npm 发布。
 
@@ -65,7 +65,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` 会运行单测、类型检查、Host/Web 构建、alpha.3 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
+`pnpm run check` 会运行单测、类型检查、Host/Web 构建、Alpha.4 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
 
 检查还会比较 `snapshots/ponytail-host.json` 中的无密钥 assembled Host transcript；确认运行时变化符合预期后，可用 `pnpm run snapshot:record` 刷新它。
 

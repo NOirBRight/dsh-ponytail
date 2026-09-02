@@ -1,19 +1,21 @@
 # dsh-ponytail
 
-`dsh-ponytail` is an independent DeepSeek Harness alpha.3 bundle that brings Ponytail's minimal-code policy, six skills, session modes, commands, subagent inheritance, and Web GUI settings to DSH. It does not modify or copy DeepSeek Harness Core.
+`dsh-ponytail` is an independent DeepSeek Harness Alpha.4 bundle that brings Ponytail's minimal-code policy, six skills, session modes, commands, subagent inheritance, and Web GUI settings to DSH. It does not modify or copy DeepSeek Harness Core.
+
+Compatibility: this release requires DeepSeek Harness `0.1.2-alpha.4` and `@deepseek-ai/cordis@4.0.2`; it is not compatible with Alpha.1–Alpha.3. Users on older runtimes must keep the last plugin tag built for that runtime.
 
 ## Install
 
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.0
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.1
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.0/dsh-ponytail-skills-0.2.0.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.1/dsh-ponytail-skills-0.2.1.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -24,7 +26,7 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 
 For the first acceptance pass, install the link only in the `~/.dsh-lab` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
-The bundle is built for `dsh-v0.1.2-alpha.3` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
+The bundle is built for `dsh-v0.1.2-alpha.4` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
 
 The repository is named `dsh-ponytail`; its release package is `dsh-ponytail-skills` because the unscoped `dsh-ponytail` npm name is already owned by another publisher. The GitHub release is the current distribution channel; npm publication can be enabled later by configuring `NPM_TOKEN`.
 
@@ -65,7 +67,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` runs unit tests, typecheck, Host/Web builds, alpha.3 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
+`pnpm run check` runs unit tests, typecheck, Host/Web builds, Alpha.4 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
 
 The check also compares the keyless assembled Host transcript in `snapshots/ponytail-host.json`; after reviewing an intentional runtime change, refresh it with `pnpm run snapshot:record`.
 

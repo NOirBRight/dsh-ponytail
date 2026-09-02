@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { AgentRegistry, type Agent } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
-import { SessionStore } from '@deepseek-ai/dsh-session'
+import { SessionLogOffset, SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
@@ -74,7 +74,7 @@ function registerAgent(ctx: Context, id: string, meta?: { parentSession?: Agent[
 }
 
 describe('Ponytail Host integration', () => {
-  it('loads through alpha.3 services, records mode events, and handles pending commands', async () => {
+  it('loads through Alpha.4 services, records mode events, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/session-start', { agent, source: 'startup' })
@@ -152,14 +152,15 @@ describe('Ponytail Host integration', () => {
         time: 1,
         data: { mode: 'ultra', pending: null, source: 'command', inheritedFrom: null },
       } as never],
-      meta: { cwd: process.cwd(), seedLength: 1 },
+      inheritedEventCount: SessionLogOffset(1),
+      meta: { cwd: process.cwd(), isSeeded: true },
     })
     const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} } as unknown as Agent
     ctx.agents.register(agent)
     ctx.emit('agent/session-start', { agent, source: 'resume' })
 
     expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'ultra', pending: null })
-    expect(session.events.filter(event => event.type === 'ponytail/mode')).toHaveLength(1)
+    expect(session.snapshotEvents().filter(event => event.type === 'ponytail/mode')).toHaveLength(1)
   })
 
 })

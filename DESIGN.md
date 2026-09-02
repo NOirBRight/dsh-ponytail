@@ -2,7 +2,7 @@
 
 ## 目标
 
-`dsh-ponytail` 是针对 DeepSeek Harness `dsh-v0.1.2-alpha.3` 的独立适配器。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
+`dsh-ponytail` 是针对 DeepSeek Harness `dsh-v0.1.2-alpha.4` 的独立适配器。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
 
 ## 运行时分工
 
@@ -14,7 +14,7 @@
 
 ## 会话事件兼容
 
-alpha.2/alpha.3 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ignorable` 事件，而目录暂时没有下游插件注册接口。插件在激活时从 `ctx.baseUrl` 解析宿主 profile 实际使用的 `@deepseek-ai/dsh-session`，向其导出的目录加入 `ponytail/mode`，卸载时撤回；这样本地 `link:`、打包安装和宿主依赖不会各自维护一份目录。该解析只发生在 Host 面，浏览器 bundle 不加载 Node 模块。上游提供正式注册接口后，应替换 `src/session-catalog.ts` 的兼容层。
+Alpha.4 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ignorable` 事件，而目录暂时没有下游插件注册接口。插件在激活时从 `ctx.baseUrl` 解析宿主 profile 实际使用的 `@deepseek-ai/dsh-session`，向其导出的目录加入 `ponytail/mode`，卸载时撤回；这样本地 `link:`、打包安装和宿主依赖不会各自维护一份目录。该解析只发生在 Host 面，浏览器 bundle 不加载 Node 模块。上游提供正式注册接口后，应替换 `src/session-catalog.ts` 的兼容层。
 
 ## 配置决策
 
@@ -30,4 +30,4 @@ alpha.2/alpha.3 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ig
 
 ## 兼容性边界
 
-`package.json` 的 peer 版本精确固定到 alpha.3；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名为 `dsh-ponytail`，发行包名为 `dsh-ponytail-skills`，`cordis.patch.yml` 挂载该发行包并保留 `dsh-ponytail` 的 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在 alpha.3 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；3082 的 alpha.2 仅作为实验面做了兼容性验收，不改变发布目标。
+`package.json` 的 peer 版本精确固定到 Alpha.4；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名为 `dsh-ponytail`，发行包名为 `dsh-ponytail-skills`，`cordis.patch.yml` 挂载该发行包并保留 `dsh-ponytail` 的 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在 Alpha.4 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由 Alpha.4 原地读取。

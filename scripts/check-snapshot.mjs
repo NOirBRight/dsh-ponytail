@@ -41,14 +41,15 @@ class MemorySettings extends SettingsProvider {
 
 async function snapshotValue(ctx, agent, assembly) {
   const session = agent.session
+  const events = session.snapshotEvents()
   const ponytailSection = assembly.sections.find(section => section.name === 'ponytail:policy')
   if (ponytailSection === undefined) throw new Error('assembled application omitted ponytail:policy')
-  const header = session.events.find(event => event.type === 'request/header')
+  const header = events.find(event => event.type === 'request/header')
   if (header === undefined || header.data.header.system === undefined) throw new Error('assembled application omitted the Ponytail request header')
 
   return {
     application: {
-      loader: 'alpha.3',
+      loader: 'alpha.4',
       plugin: ctx.ponytail.name,
       skills: (await ctx.skills.list()).map(skill => skill.name),
     },
@@ -58,7 +59,7 @@ async function snapshotValue(ctx, agent, assembly) {
     },
     session: {
       state: ctx.ponytail.stateOf(session),
-      events: session.events.map(event => ({ type: event.type, data: event.data })),
+      events: events.map(event => ({ type: event.type, data: event.data })),
     },
     modelRequest: {
       sectionNames: assembly.sections.map(section => section.name),
@@ -110,7 +111,7 @@ async function main() {
     } else {
       const expected = await readFile(snapshotPath, 'utf8')
       assert.equal(serialized, expected, `keyless assembled application snapshot differs: ${snapshotPath}`)
-      console.log('snapshot smoke passed: alpha.3 assembled Host transcript is stable')
+      console.log('snapshot smoke passed: alpha.4 assembled Host transcript is stable')
     }
   } finally {
     await ctx.fiber.dispose()
