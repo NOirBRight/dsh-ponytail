@@ -30,4 +30,4 @@ Alpha.4 的 `dsh-session` 会拒绝事件目录中没有列出的非 `ignorable`
 
 ## 兼容性边界
 
-`package.json` 的 peer 版本精确固定到 Alpha.4；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名为 `dsh-ponytail`，发行包名为 `dsh-ponytail-skills`，`cordis.patch.yml` 挂载该发行包并保留 `dsh-ponytail` 的 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在 Alpha.4 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由 Alpha.4 原地读取。
+`package.json` 的 peer 版本精确固定到 Alpha.4；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名、发行包名与插件品牌统一为 `dsh-ponytail`，`cordis.patch.yml` 挂载该发行包并保留 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在 Alpha.4 官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由 Alpha.4 原地读取。

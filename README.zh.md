@@ -7,13 +7,13 @@
 固定 GitHub release（从源码安装）：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.0
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.2
 ```
 
 GitHub release 的预构建 tarball：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.0/dsh-ponytail-skills-0.2.0.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.2/dsh-ponytail-0.2.2.tgz
 ```
 
 本地验收使用 checkout：
@@ -26,7 +26,7 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 
 此 bundle 固定兼容 `dsh-v0.1.2-alpha.4` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
-仓库名称为 `dsh-ponytail`；发行包使用 `dsh-ponytail-skills`，因为不带 scope 的 `dsh-ponytail` npm 名称已由其他维护者占用。当前分发渠道是 GitHub release；后续配置 `NPM_TOKEN` 后即可启用 npm 发布。
+仓库、发行包与插件品牌统一为 `dsh-ponytail`。仅通过 GitHub release 分发：不带 scope 的 `dsh-ponytail` npm 名称已被其他维护者占用，因此不启用 `npm publish`（不配置 `NPM_TOKEN`）。
 
 ## 模式与命令
 

@@ -9,13 +9,13 @@ Compatibility: this release requires DeepSeek Harness `0.1.2-alpha.4` and `@deep
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.1
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.2
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.1/dsh-ponytail-skills-0.2.1.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.2/dsh-ponytail-0.2.2.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -28,7 +28,7 @@ For the first acceptance pass, install the link only in the `~/.dsh-lab` / port 
 
 The bundle is built for `dsh-v0.1.2-alpha.4` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
 
-The repository is named `dsh-ponytail`; its release package is `dsh-ponytail-skills` because the unscoped `dsh-ponytail` npm name is already owned by another publisher. The GitHub release is the current distribution channel; npm publication can be enabled later by configuring `NPM_TOKEN`.
+The repository, release package, and plugin brand are all `dsh-ponytail`. Distribution is GitHub release only: the unscoped `dsh-ponytail` npm name is owned by another publisher, so `npm publish` stays disabled (no `NPM_TOKEN`).
 
 ## Modes and commands
 

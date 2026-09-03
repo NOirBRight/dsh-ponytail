@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.2] - 2026-09-03
+
+### Changed
+
+- 包名由 `dsh-ponytail-skills` 改回 `dsh-ponytail`，与仓库名和插件品牌统一；分发仍只走 GitHub release（`dsh-ponytail` npm 名称被他人占用，不启用 npm 发布）。
+
 ## [0.2.0] - 2026-09-01
 
 ### Added

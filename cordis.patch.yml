@@ -2,4 +2,4 @@
 # `dsh.client` manifest; no DeepSeek Harness source is patched.
 - insert:
     - id: ponytail
-      name: 'dsh-ponytail-skills'
+      name: 'dsh-ponytail'
