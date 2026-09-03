@@ -2,18 +2,27 @@
 
 `dsh-ponytail` 是面向 DeepSeek Harness Alpha.4 的独立 bundle，把 Ponytail 的最小实现策略、六个技能、会话模式、命令、子 Agent 继承和 Web GUI 设置接入 DSH。它不修改也不复制 DeepSeek Harness Core。
 
+## 兼容性
+
+已验证运行时是 DeepSeek Harness `0.1.2-alpha.4` 与 `0.1.2-rc.1`（Cordis `4.0.2`）；这份记录只是证据，不是 allowlist。
+
+未知的新版本会先打一条 warning，再按正常挂载路径 best-effort 尝试，不会因为未验证而跳过。
+
+只有复现过的故障才会加入 blocklist；受影响版本、原因和证据见[兼容性记录](package.json)。
+
+
 ## 安装
 
 固定 GitHub release（从源码安装）：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.2
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.3
 ```
 
 GitHub release 的预构建 tarball：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.2/dsh-ponytail-0.2.2.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.3/dsh-ponytail-0.2.3.tgz
 ```
 
 本地验收使用 checkout：

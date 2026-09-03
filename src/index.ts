@@ -24,6 +24,7 @@ import { buildPolicy } from './policy.ts'
 import { createPonytailProjectionDefinition, type PonytailModeEvent, type PonytailUnitState } from './projection.ts'
 import { discoverBundledSkills } from './skills.ts'
 import { registerHostSessionEvent } from './session-catalog.ts'
+import { allowDshRuntime } from './compatibility.ts'
 
 /** Plugin identifier used by Cordis and the DSH bundle loader. */
 export const name = 'dsh-ponytail'
@@ -59,8 +60,8 @@ export class PonytailController extends Service {
   static inject = inject
   static Config = pluginConfigSchema
 
-  private readonly settingsScope
-  private readonly baseSettings: PonytailSettings
+  private readonly settingsScope!: { get(): Partial<PonytailSettings>; update(value: Partial<PonytailSettings>): Promise<void> }
+  private readonly baseSettings!: PonytailSettings
 
   /**
    * @param ctx - Host context owning the plugin.
@@ -68,6 +69,7 @@ export class PonytailController extends Service {
    */
   constructor(ctx: Context, _config: Record<string, never> = {}) {
     super(ctx, 'ponytail')
+    if (!allowDshRuntime(ctx.logger, 'dsh-ponytail', ['@deepseek-ai/dsh-agent'])) return
     // DSH Alpha.4 intentionally keeps the core persistence catalog
     // static. Register this required plugin event in the Host's shared catalog
     // while the plugin is loaded so session recovery does not reject its logs.

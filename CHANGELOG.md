@@ -1,4 +1,11 @@
 # Changelog
+## [0.2.3] - 2026-09-03
+
+### Changed
+
+- DSH compatibility declarations cover the verified Alpha.4 and rc.1 runtimes.
+- Unknown runtimes warn once and use the normal best-effort mount path; only reproduced failures may be blocklisted.
+
 
 ## [0.2.2] - 2026-09-03
 

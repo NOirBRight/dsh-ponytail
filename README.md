@@ -2,20 +2,27 @@
 
 `dsh-ponytail` is an independent DeepSeek Harness Alpha.4 bundle that brings Ponytail's minimal-code policy, six skills, session modes, commands, subagent inheritance, and Web GUI settings to DSH. It does not modify or copy DeepSeek Harness Core.
 
-Compatibility: this release requires DeepSeek Harness `0.1.2-alpha.4` and `@deepseek-ai/cordis@4.0.2`; it is not compatible with Alpha.1–Alpha.3. Users on older runtimes must keep the last plugin tag built for that runtime.
+## Compatibility
+
+Verified runtimes are DeepSeek Harness `0.1.2-alpha.4` and `0.1.2-rc.1` on Cordis `4.0.2`; this record is evidence, not an allowlist.
+
+Unknown newer runtimes are attempted on a best-effort basis after one warning, and the plugin keeps its normal mount path.
+
+A reproduced failure is blocklisted only afterward; see the [compatibility records](package.json) for the affected version, reason, and evidence.
+
 
 ## Install
 
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.2
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.3
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.2/dsh-ponytail-0.2.2.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.3/dsh-ponytail-0.2.3.tgz
 ```
 
 Lab checkout for local acceptance:
