@@ -1,4 +1,12 @@
 # Changelog
+## [0.2.4] - 2026-09-04
+
+### Fixed
+
+- Keep the dynamic system prompt as Ponytail's only automatic policy injection, even when another skill provider installed a global `ponytail` copy.
+- Apply pending mode changes and natural-language deactivation before the affected request prompt is assembled.
+- Correct the documented port 3082 acceptance profile to `~/.dsh-rc1-canary`.
+
 ## [0.2.3] - 2026-09-03
 
 ### Changed

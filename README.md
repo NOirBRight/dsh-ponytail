@@ -16,22 +16,22 @@ A reproduced failure is blocklisted only afterward; see the [compatibility recor
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.3
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.4
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.3/dsh-ponytail-0.2.3.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.4/dsh-ponytail-0.2.4.tgz
 ```
 
 Lab checkout for local acceptance:
 
 ```sh
-DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
+DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
 ```
 
-For the first acceptance pass, install the link only in the `~/.dsh-lab` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
+For the first acceptance pass, install the link only in the `~/.dsh-rc1-canary` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
 The bundle is built for `dsh-v0.1.2-alpha.4` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
 
@@ -50,7 +50,7 @@ Each session records a complete `ponytail/mode` event and exposes a `ponytail` p
 
 Changing mode while a model turn is running is recorded as pending and takes effect at the next accepted step. `stop ponytail` and `normal mode` (whole-message, case-insensitive, trailing punctuation ignored) turn the current session off.
 
-The six bundled skills are `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, and `ponytail-help`. The DSH Skill Registry owns discovery and invocation; the upstream MCP is not duplicated.
+The six bundled skills are `ponytail`, `ponytail-review`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, and `ponytail-help`. The base `ponytail` skill remains user-invocable but is removed from the model catalog—even if another provider installed a global copy—because the active mode already injects the same policy through the system prompt. The DSH Skill Registry owns discovery and invocation; the upstream MCP is not duplicated.
 
 ## Settings and GUI
 

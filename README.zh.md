@@ -16,22 +16,22 @@
 固定 GitHub release（从源码安装）：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.3
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.4
 ```
 
 GitHub release 的预构建 tarball：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.3/dsh-ponytail-0.2.3.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.4/dsh-ponytail-0.2.4.tgz
 ```
 
 本地验收使用 checkout：
 
 ```sh
-DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
+DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
 ```
 
-第一阶段只在 `~/.dsh-lab` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
+第一阶段只在 `~/.dsh-rc1-canary` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
 此 bundle 固定兼容 `dsh-v0.1.2-alpha.4` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
@@ -50,7 +50,7 @@ DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstati
 
 模型轮次运行时切换会记录为 pending，在下一次接受的 step 生效。整条用户消息为 `stop ponytail` 或 `normal mode`（忽略大小写和末尾标点）时关闭当前会话。
 
-随包自动发现并注册六个技能：`ponytail`、`ponytail-review`、`ponytail-audit`、`ponytail-debt`、`ponytail-gain`、`ponytail-help`。发现和调用由 DSH Skill Registry 负责，不重复实现上游 MCP。
+随包自动发现并注册六个技能：`ponytail`、`ponytail-review`、`ponytail-audit`、`ponytail-debt`、`ponytail-gain`、`ponytail-help`。基础 `ponytail` 技能仍可由用户调用，但会从模型目录移除，即使其他 Provider 另行安装了全局副本也一样，因为活动模式已通过系统提示注入同一策略。发现和调用由 DSH Skill Registry 负责，不重复实现上游 MCP。
 
 ## 设置与 GUI
 

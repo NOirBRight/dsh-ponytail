@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { AgentRegistry, type Agent } from '@deepseek-ai/dsh-agent'
+import { AgentRegistry, agentEvents, assembleContextFor, type Agent } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { SessionLogOffset, SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
-import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
+import { renderPrompt, SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
 import PonytailController from '../src/index.ts'
 
 class MemorySettings extends SettingsProvider {
@@ -86,6 +86,9 @@ describe('Ponytail Host integration', () => {
     ;(agent as unknown as { status: 'idle' | 'running' }).status = 'running'
     expect(ctx.ponytail.setMode(agent, 'ultra')).toBe('pending')
     expect(ctx.sessionProjections.stateOf(agent.session, 'ponytail')).toMatchObject({ mode: 'full', pending: 'ultra' })
+    const pendingPrompt = renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(agent)))
+    expect(pendingPrompt).toContain('PONYTAIL MODE ACTIVE — level: ultra')
+    expect(pendingPrompt).not.toContain('PONYTAIL MODE ACTIVE — level: full')
     ctx.ponytail.applyPending(agent)
     expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'ultra', pending: null, source: 'command' })
 
@@ -94,6 +97,28 @@ describe('Ponytail Host integration', () => {
     expect(result).toEqual({ kind: 'success', text: 'Ponytail mode: off.' })
     expect(ctx.ponytail.stateOf(agent.session).mode).toBe('off')
     expect(ctx.ponytail.policyFor(agent)).toBe('')
+  })
+
+  it('hides a competing base Ponytail skill from the model catalog', async () => {
+    const ctx = await boot()
+    const agent = registerAgent(ctx, 'session-catalog')
+    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    const catalog = {
+      content: [{ type: 'text', text: '- `ponytail`: duplicate\n- `ponytail-review`: keep' }],
+      source: { kind: 'skill-catalog', entries: [{ name: 'ponytail' }, { name: 'ponytail-review' }] },
+      role: 'user',
+      id: 'catalog',
+    } as never
+    const decision = await agentEvents(ctx, agent).waterfall(
+      'agent/pre-step',
+      { messages: [catalog], turn: 1, step: 1, signal: new AbortController().signal },
+      () => Promise.resolve({ kind: 'enter' as const, messages: [catalog] }),
+    )
+
+    expect(decision.kind).toBe('enter')
+    if (decision.kind !== 'enter') return
+    expect(decision.messages[0]?.content).toEqual([{ type: 'text', text: '- `ponytail-review`: keep' }])
+    expect((decision.messages[0]?.source as { entries?: unknown }).entries).toEqual([{ name: 'ponytail' }, { name: 'ponytail-review' }])
   })
 
   it('deactivates only an exact text-only request and inherits a live parent mode', async () => {
@@ -108,8 +133,12 @@ describe('Ponytail Host integration', () => {
 
     ctx.ponytail.applyNaturalDeactivation(child, [{ content: [{ type: 'text', text: 'add a normal mode toggle' }] }] as never)
     expect(ctx.ponytail.stateOf(child.session).mode).toBe('lite')
-    ctx.ponytail.applyNaturalDeactivation(child, [{ content: [{ type: 'text', text: ' NORMAL MODE!!! ' }] }] as never)
+    ctx.emit('agent/inbox/inserted', {
+      agent: child,
+      message: { content: [{ type: 'text', text: ' NORMAL MODE!!! ' }] } as never,
+    })
     expect(ctx.ponytail.stateOf(child.session)).toMatchObject({ mode: 'off', source: 'natural-language' })
+    expect(renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(child)))).not.toContain('PONYTAIL MODE ACTIVE')
   })
 
   it('scopes child injection by agentPreset while allowing missing preset metadata', async () => {

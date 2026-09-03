@@ -10,6 +10,8 @@ describe('bundled Ponytail skills', () => {
     expect(skills.map(skill => skill.name)).toEqual([...PONYTAIL_SKILL_NAMES].sort())
     expect(skills.every(skill => !skill.content.startsWith('---'))).toBe(true)
     expect(skills.every(skill => skill.provider === 'dsh-ponytail')).toBe(true)
+    expect(skills.find(skill => skill.name === 'ponytail')?.invocation).toEqual({ modelInvocable: false, userInvocable: true })
+    expect(skills.filter(skill => skill.name !== 'ponytail').every(skill => skill.invocation?.modelInvocable)).toBe(true)
   })
 
   it('retains multiline descriptions and metadata', () => {

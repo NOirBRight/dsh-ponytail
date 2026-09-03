@@ -41,6 +41,17 @@ export const PONYTAIL_SETTINGS_NAMESPACE = 'ponytail'
 /** Event name persisted by this downstream plugin. */
 const PONYTAIL_MODE_EVENT = 'ponytail/mode'
 
+/** Hide the base skill even when another provider also installed Ponytail globally. */
+function withoutBaseSkillCatalog(messages: UserMessage[]): UserMessage[] {
+  return messages.map(message => (message.source as { kind: string }).kind !== 'skill-catalog' ? message : {
+    ...message,
+    content: message.content.map(block => block.type !== 'text' ? block : {
+      ...block,
+      text: block.text.split('\n').filter(line => !line.startsWith('- `ponytail`:')).join('\n'),
+    }),
+  })
+}
+
 /** Schema used by the DSH settings provider. */
 export const ponytailSettingsSchema = Schema.object({
   defaultMode: Schema.union(PONYTAIL_MODES.map(mode => Schema.const(mode))).default('full').description('Default Ponytail mode for new sessions.'),
@@ -101,11 +112,14 @@ export class PonytailController extends Service {
     ctx.on('agent/session-start', ({ agent, source }) => {
       this.initializeSession(agent, source)
     })
-    ctx.on('agent/pre-step', async ({ agent, messages, signal }, next): Promise<PreStepDecision> => {
-      this.applyNaturalDeactivation(agent, messages)
+    ctx.on('agent/inbox/inserted', ({ agent, message }) => {
+      this.applyNaturalDeactivation(agent, [message])
+    })
+    ctx.on('agent/pre-step', async ({ agent, signal }, next): Promise<PreStepDecision> => {
       const decision = await next()
-      if (decision.kind === 'enter' && !signal.aborted) this.applyPending(agent)
-      return decision
+      if (decision.kind !== 'enter' || signal.aborted) return decision
+      this.applyPending(agent)
+      return { ...decision, messages: withoutBaseSkillCatalog(decision.messages) }
     })
 
     ctx.commands.register({
@@ -128,11 +142,11 @@ export class PonytailController extends Service {
     return state
   }
 
-  /** Return the mode policy for a model request. */
+  /** Return the mode policy for the next model request. */
   policyFor(agent: Agent): string {
     const state = this.stateOf(agent.session)
     if (!this.isEligibleAgent(agent)) return ''
-    return buildPolicy(state.mode)
+    return buildPolicy(state.pending ?? state.mode)
   }
 
   /** Apply the child matcher and preserve the upstream missing-preset fail-open rule. */
