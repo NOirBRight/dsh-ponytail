@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { AgentRegistry, type Agent } from '@deepseek-ai/dsh-agent'
+import { AgentRegistry, agentEvents, assembleContextFor, type Agent } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
-import { SessionStore } from '@deepseek-ai/dsh-session'
+import { SessionLogOffset, SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
-import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
+import { renderPrompt, SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
 import PonytailController from '../src/index.ts'
 
 class MemorySettings extends SettingsProvider {
@@ -74,7 +74,7 @@ function registerAgent(ctx: Context, id: string, meta?: { parentSession?: Agent[
 }
 
 describe('Ponytail Host integration', () => {
-  it('loads through alpha.3 services, records mode events, and handles pending commands', async () => {
+  it('loads through Alpha.4 services, keeps live mode state, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/session-start', { agent, source: 'startup' })
@@ -85,7 +85,10 @@ describe('Ponytail Host integration', () => {
 
     ;(agent as unknown as { status: 'idle' | 'running' }).status = 'running'
     expect(ctx.ponytail.setMode(agent, 'ultra')).toBe('pending')
-    expect(ctx.sessionProjections.stateOf(agent.session, 'ponytail')).toMatchObject({ mode: 'full', pending: 'ultra' })
+    expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'full', pending: 'ultra' })
+    const pendingPrompt = renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(agent)))
+    expect(pendingPrompt).toContain('PONYTAIL MODE ACTIVE — level: ultra')
+    expect(pendingPrompt).not.toContain('PONYTAIL MODE ACTIVE — level: full')
     ctx.ponytail.applyPending(agent)
     expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'ultra', pending: null, source: 'command' })
 
@@ -94,6 +97,29 @@ describe('Ponytail Host integration', () => {
     expect(result).toEqual({ kind: 'success', text: 'Ponytail mode: off.' })
     expect(ctx.ponytail.stateOf(agent.session).mode).toBe('off')
     expect(ctx.ponytail.policyFor(agent)).toBe('')
+    expect(agent.session.snapshotEvents().some(event => event.type === 'ponytail/mode')).toBe(false)
+  })
+
+  it('hides a competing base Ponytail skill from the model catalog', async () => {
+    const ctx = await boot()
+    const agent = registerAgent(ctx, 'session-catalog')
+    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    const catalog = {
+      content: [{ type: 'text', text: '- `ponytail`: duplicate\n- `ponytail-review`: keep' }],
+      source: { kind: 'skill-catalog', entries: [{ name: 'ponytail' }, { name: 'ponytail-review' }] },
+      role: 'user',
+      id: 'catalog',
+    } as never
+    const decision = await agentEvents(ctx, agent).waterfall(
+      'agent/pre-step',
+      { messages: [catalog], turn: 1, step: 1, signal: new AbortController().signal },
+      () => Promise.resolve({ kind: 'enter' as const, messages: [catalog] }),
+    )
+
+    expect(decision.kind).toBe('enter')
+    if (decision.kind !== 'enter') return
+    expect(decision.messages[0]?.content).toEqual([{ type: 'text', text: '- `ponytail-review`: keep' }])
+    expect((decision.messages[0]?.source as { entries?: unknown }).entries).toEqual([{ name: 'ponytail' }, { name: 'ponytail-review' }])
   })
 
   it('deactivates only an exact text-only request and inherits a live parent mode', async () => {
@@ -108,8 +134,12 @@ describe('Ponytail Host integration', () => {
 
     ctx.ponytail.applyNaturalDeactivation(child, [{ content: [{ type: 'text', text: 'add a normal mode toggle' }] }] as never)
     expect(ctx.ponytail.stateOf(child.session).mode).toBe('lite')
-    ctx.ponytail.applyNaturalDeactivation(child, [{ content: [{ type: 'text', text: ' NORMAL MODE!!! ' }] }] as never)
+    ctx.emit('agent/inbox/inserted', {
+      agent: child,
+      message: { content: [{ type: 'text', text: ' NORMAL MODE!!! ' }] } as never,
+    })
     expect(ctx.ponytail.stateOf(child.session)).toMatchObject({ mode: 'off', source: 'natural-language' })
+    expect(renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(child)))).not.toContain('PONYTAIL MODE ACTIVE')
   })
 
   it('scopes child injection by agentPreset while allowing missing preset metadata', async () => {
@@ -143,7 +173,7 @@ describe('Ponytail Host integration', () => {
     expect(ctx.settings.get('ponytail')).toMatchObject({ subagentMatcher: '' })
   })
 
-  it('does not reset a mode that exists in a resumed seed prefix', async () => {
+  it('uses the configured default on resume without rewriting legacy events', async () => {
     const ctx = await boot()
     const session = ctx.sessions.create('session-resumed' as Agent['id'], {
       seed: [{
@@ -152,14 +182,15 @@ describe('Ponytail Host integration', () => {
         time: 1,
         data: { mode: 'ultra', pending: null, source: 'command', inheritedFrom: null },
       } as never],
-      meta: { cwd: process.cwd(), seedLength: 1 },
+      inheritedEventCount: SessionLogOffset(1),
+      meta: { cwd: process.cwd(), isSeeded: true },
     })
     const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} } as unknown as Agent
     ctx.agents.register(agent)
     ctx.emit('agent/session-start', { agent, source: 'resume' })
 
-    expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'ultra', pending: null })
-    expect(session.events.filter(event => event.type === 'ponytail/mode')).toHaveLength(1)
+    expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'full', pending: null })
+    expect(session.snapshotEvents().filter(event => event.type === 'ponytail/mode')).toHaveLength(1)
   })
 
 })

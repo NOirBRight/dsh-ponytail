@@ -1,5 +1,5 @@
-# DSH alpha.3 bundle entry. The package's browser half is selected by its
+# DSH Alpha.4 bundle entry. The package's browser half is selected by its
 # `dsh.client` manifest; no DeepSeek Harness source is patched.
 - insert:
     - id: ponytail
-      name: 'dsh-ponytail-skills'
+      name: 'dsh-ponytail'

@@ -3,7 +3,7 @@ import { basename, dirname, relative, resolve } from 'node:path'
 import { transform } from 'lightningcss'
 import type { UserConfig } from 'tsdown'
 
-const PACKAGE_ID = 'dsh-ponytail-skills'
+const PACKAGE_ID = 'dsh-ponytail'
 
 /** Bundle CSS modules into the client plugin so the Loader needs only client.js. */
 const cssModules = {

@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.2.5] - 2026-09-05
+
+- Keep mode selections in memory instead of writing required custom events, so uninstalling Ponytail does not block new conversation history. Restarting resets the mode; optional mode-projection startup notices are unavailable.
+- Add an offline, backup-preserving repair tool for legacy `ponytail/mode` events and a fresh-Host persistence regression check.
+## [0.2.4] - 2026-09-04
+
+### Fixed
+
+- Keep the dynamic system prompt as Ponytail's only automatic policy injection, even when another skill provider installed a global `ponytail` copy.
+- Apply pending mode changes and natural-language deactivation before the affected request prompt is assembled.
+- Correct the documented port 3082 acceptance profile to `~/.dsh-rc1-canary`.
+
+## [0.2.3] - 2026-09-03
+
+### Changed
+
+- DSH compatibility declarations cover the verified Alpha.4 and rc.1 runtimes.
+- Unknown runtimes warn once and use the normal best-effort mount path; only reproduced failures may be blocklisted.
+
+
+## [0.2.2] - 2026-09-03
+
+### Changed
+
+- 包名由 `dsh-ponytail-skills` 改回 `dsh-ponytail`，与仓库名和插件品牌统一；分发仍只走 GitHub release（`dsh-ponytail` npm 名称被他人占用，不启用 npm 发布）。
+
 ## [0.2.0] - 2026-09-01
 
 ### Added

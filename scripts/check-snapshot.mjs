@@ -7,6 +7,8 @@ import { Context } from '@deepseek-ai/cordis'
 import { Loader } from '@deepseek-ai/cordis-plugin-loader'
 import { AgentRegistry, assembleContextFor } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
+import { JsonlSessionPersistence } from '@deepseek-ai/dsh-session-persistence-jsonl'
+import { repairFile } from './repair-session.mjs'
 import { SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider } from '@deepseek-ai/dsh-settings'
@@ -41,14 +43,15 @@ class MemorySettings extends SettingsProvider {
 
 async function snapshotValue(ctx, agent, assembly) {
   const session = agent.session
+  const events = session.snapshotEvents()
   const ponytailSection = assembly.sections.find(section => section.name === 'ponytail:policy')
   if (ponytailSection === undefined) throw new Error('assembled application omitted ponytail:policy')
-  const header = session.events.find(event => event.type === 'request/header')
+  const header = events.find(event => event.type === 'request/header')
   if (header === undefined || header.data.header.system === undefined) throw new Error('assembled application omitted the Ponytail request header')
 
   return {
     application: {
-      loader: 'alpha.3',
+      loader: 'alpha.4',
       plugin: ctx.ponytail.name,
       skills: (await ctx.skills.list()).map(skill => skill.name),
     },
@@ -58,13 +61,17 @@ async function snapshotValue(ctx, agent, assembly) {
     },
     session: {
       state: ctx.ponytail.stateOf(session),
-      events: session.events.map(event => ({ type: event.type, data: event.data })),
+      events: events.map(event => ({ type: event.type, data: event.data })),
     },
     modelRequest: {
       sectionNames: assembly.sections.map(section => section.name),
       hasPonytailPolicy: header.data.header.system.includes(ponytailSection.text),
     },
   }
+}
+
+function eventsContainPonytail(session) {
+  return session.snapshotEvents().some(event => event.type === 'ponytail/mode')
 }
 
 async function main() {
@@ -100,6 +107,35 @@ async function main() {
       },
       reason: 'initial',
     })
+    assert.equal(eventsContainPonytail(session), false)
+    const storageRoot = join(configRoot, 'sessions')
+    const writer = new Context()
+    await writer.plugin(SessionStore)
+    await writer.plugin(JsonlSessionPersistence, { root: storageRoot, compression: 'none' })
+    await writer.sessionPersistence.create(session.header)
+    await writer.sessionPersistence.append(session.id, session.snapshotEvents())
+    const path = writer.sessionPersistence.locate(session.header).path
+    await writer.fiber.dispose()
+
+    // A fresh Host has never loaded Ponytail or changed its event catalog.
+    const reader = new Context()
+    try {
+      await reader.plugin(SessionStore)
+      await reader.plugin(JsonlSessionPersistence, { root: storageRoot, compression: 'none' })
+      const restored = await reader.sessionPersistence.inspect(session.id)
+      assert.deepEqual(restored.events, session.snapshotEvents())
+      const original = await readFile(path, 'utf8')
+      const legacy = { type: 'ponytail/mode', seq: session.snapshotEvents().length, time: Date.now(), data: { mode: 'full', pending: null, source: 'default', inheritedFrom: null } }
+      await writeFile(path, original + JSON.stringify(legacy) + '\n')
+      await assert.rejects(reader.sessionPersistence.inspect(session.id), /unknown to this harness/)
+      await repairFile(path, true)
+      const repaired = await reader.sessionPersistence.inspect(session.id)
+      assert.equal(repaired.events.at(-1).ignorable, true)
+      assert.deepEqual(repaired.events.slice(0, -1), session.snapshotEvents())
+      console.log('uninstall smoke passed: fresh Host reads new logs and repaired legacy logs without Ponytail')
+    } finally {
+      await reader.fiber.dispose()
+    }
     const actual = await snapshotValue(ctx, agent, assembly)
     const serialized = `${JSON.stringify(actual, null, 2)}\n`
 
@@ -110,7 +146,7 @@ async function main() {
     } else {
       const expected = await readFile(snapshotPath, 'utf8')
       assert.equal(serialized, expected, `keyless assembled application snapshot differs: ${snapshotPath}`)
-      console.log('snapshot smoke passed: alpha.3 assembled Host transcript is stable')
+      console.log('snapshot smoke passed: alpha.4 assembled Host transcript is stable')
     }
   } finally {
     await ctx.fiber.dispose()

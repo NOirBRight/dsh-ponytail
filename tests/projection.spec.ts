@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createPonytailProjectionDefinition, targetMode, type PonytailModeEvent } from '../src/projection.ts'
 
-const header = { version: 0, id: 'session-test' as never, createdAt: 0 }
+const header = { version: 0, id: 'session-test' as never, createdAt: 0, isSeeded: false }
 const event = (data: PonytailModeEvent) => ({ type: 'ponytail/mode', time: 1, seq: 0, data }) as never
 
 describe('ponytail projection', () => {

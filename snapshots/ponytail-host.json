@@ -1,6 +1,6 @@
 {
   "application": {
-    "loader": "alpha.3",
+    "loader": "alpha.4",
     "plugin": "ponytail",
     "skills": [
       "ponytail",
@@ -23,15 +23,6 @@
       "inheritedFrom": null
     },
     "events": [
-      {
-        "type": "ponytail/mode",
-        "data": {
-          "mode": "full",
-          "pending": null,
-          "source": "default",
-          "inheritedFrom": null
-        }
-      },
       {
         "type": "request/header",
         "data": {

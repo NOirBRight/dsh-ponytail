@@ -72,7 +72,7 @@ export function discoverBundledSkills(root = SKILLS_ROOT): SkillRegistration[] {
       path,
       resourceBase: { kind: 'directory', path: join(root, directory.name) },
       metadata: parsed.frontmatter.metadata,
-      invocation: { modelInvocable: true, userInvocable: true },
+      invocation: { modelInvocable: name !== 'ponytail', userInvocable: true },
     })
   }
   const found = new Set(registrations.map(skill => skill.name))
