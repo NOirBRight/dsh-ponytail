@@ -1,4 +1,9 @@
 # Changelog
+
+## [0.2.5] - 2026-09-05
+
+- Keep mode selections in memory instead of writing required custom events, so uninstalling Ponytail does not block new conversation history. Restarting resets the mode; optional mode-projection startup notices are unavailable.
+- Add an offline, backup-preserving repair tool for legacy `ponytail/mode` events and a fresh-Host persistence regression check.
 ## [0.2.4] - 2026-09-04
 
 ### Fixed

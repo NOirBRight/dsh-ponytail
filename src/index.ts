@@ -8,7 +8,6 @@ import type {} from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-commands'
 import type {} from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/dsh-system-prompt'
-import type {} from '@deepseek-ai/dsh-session-projection'
 import type { CommandResult } from '@deepseek-ai/dsh-commands'
 import { PONYTAIL_MODES, isDeactivationCommand, textOnlyContent, type PonytailMode } from './mode.ts'
 import {
@@ -21,25 +20,21 @@ import {
   type PonytailSettings,
 } from './config.ts'
 import { buildPolicy } from './policy.ts'
-import { createPonytailProjectionDefinition, type PonytailModeEvent, type PonytailUnitState } from './projection.ts'
+import type { PonytailModeEvent, PonytailUnitState } from './projection.ts'
 import { discoverBundledSkills } from './skills.ts'
-import { registerHostSessionEvent } from './session-catalog.ts'
 import { allowDshRuntime } from './compatibility.ts'
 
 /** Plugin identifier used by Cordis and the DSH bundle loader. */
 export const name = 'dsh-ponytail'
 
 /** Required Host capabilities. */
-export const inject = ['agents', 'commands', 'sessionProjections', 'settings', 'skills', 'systemPrompt']
+export const inject = ['agents', 'commands', 'settings', 'skills', 'systemPrompt']
 
 /** Schema for the optional empty bundle config. Settings are user-editable through `ctx.settings`. */
 const pluginConfigSchema = Schema.object({})
 
 /** The settings namespace exposed to DSH Settings and the browser mirror. */
 export const PONYTAIL_SETTINGS_NAMESPACE = 'ponytail'
-
-/** Event name persisted by this downstream plugin. */
-const PONYTAIL_MODE_EVENT = 'ponytail/mode'
 
 /** Hide the base skill even when another provider also installed Ponytail globally. */
 function withoutBaseSkillCatalog(messages: UserMessage[]): UserMessage[] {
@@ -73,6 +68,7 @@ export class PonytailController extends Service {
 
   private readonly settingsScope!: { get(): Partial<PonytailSettings>; update(value: Partial<PonytailSettings>): Promise<void> }
   private readonly baseSettings!: PonytailSettings
+  private readonly modes = new WeakMap<Session, PonytailUnitState>()
 
   /**
    * @param ctx - Host context owning the plugin.
@@ -81,13 +77,6 @@ export class PonytailController extends Service {
   constructor(ctx: Context, _config: Record<string, never> = {}) {
     super(ctx, 'ponytail')
     if (!allowDshRuntime(ctx.logger, 'dsh-ponytail', ['@deepseek-ai/dsh-agent'])) return
-    // DSH Alpha.4 intentionally keeps the core persistence catalog
-    // static. Register this required plugin event in the Host's shared catalog
-    // while the plugin is loaded so session recovery does not reject its logs.
-    ctx.effect(
-      () => registerHostSessionEvent(ctx, PONYTAIL_MODE_EVENT),
-      'dsh-ponytail: persistence event vocabulary',
-    )
     const startup = loadSettingsSync()
     const upstream = readUpstreamConfigSync(upstreamConfigPath())
     this.baseSettings = resolveSettings({ env: {}, upstream })
@@ -100,7 +89,6 @@ export class PonytailController extends Service {
     // variable or config fails before this service is published.
     validateSettings(startup)
 
-    ctx.sessionProjections.register(createPonytailProjectionDefinition(this.currentSettings().defaultMode))
     ctx.systemPrompt.section({
       name: 'ponytail:policy',
       order: ctx.systemPrompt.getSectionOrder('PLAN_POLICY') + 1,
@@ -135,11 +123,14 @@ export class PonytailController extends Service {
     return resolveSettings({ env: process.env, dsh: this.settingsScope.get() as Partial<PonytailSettings> })
   }
 
-  /** Read the folded state; registration is required by this plugin's inject list. */
+  /** Read live mode state; a fresh runtime starts from the configured default. */
   stateOf(session: Session): PonytailUnitState {
-    const state = this.ctx.sessionProjections.stateOf(session, 'ponytail')
-    if (state === undefined) throw new Error('dsh-ponytail requires the ponytail projection')
-    return state
+    return this.modes.get(session) ?? {
+      mode: this.currentSettings().defaultMode,
+      pending: null,
+      source: 'default',
+      inheritedFrom: null,
+    }
   }
 
   /** Return the mode policy for the next model request. */
@@ -158,14 +149,10 @@ export class PonytailController extends Service {
     return (compileSubagentMatcher(matcher)?.test(header.agentPreset) ?? true)
   }
 
-  /** Initialize a fresh session or append an explicit child inheritance event. */
+  /** Initialize live mode state, inheriting an active parent when available. */
   initializeSession(agent: Agent, source: 'startup' | 'resume' | 'clear' | 'compact'): void {
     const session = agent.session
-    // Resume, clear, and compact reuse an existing session log. A mode event
-    // in the seeded prefix is already authoritative; only a fresh startup
-    // adds the child-inheritance/default event over that prefix.
-    const hasMode = session.snapshotEvents().some(event => event.type === PONYTAIL_MODE_EVENT)
-    if (source !== 'startup' && hasMode) return
+    if (source !== 'startup' && this.modes.has(session)) return
 
     const parentId = session.header.parentSession
     const parent = parentId === undefined ? undefined : this.ctx.agents.get(parentId)
@@ -179,14 +166,14 @@ export class PonytailController extends Service {
       source: inherited === undefined ? 'default' : 'inherit',
       inheritedFrom: parentId === undefined ? null : parentId,
     }
-    session.append(PONYTAIL_MODE_EVENT, event)
+    this.modes.set(session, event)
   }
 
   /** Apply a pending command selection at the next accepted model step. */
   applyPending(agent: Agent): void {
     const state = this.stateOf(agent.session)
     if (state.pending === null) return
-    this.appendMode(agent.session, state.pending, null, 'command')
+    this.setLiveMode(agent.session, state.pending, null, 'command')
   }
 
   /** Turn an exact natural-language deactivation into the current request's state. */
@@ -197,13 +184,13 @@ export class PonytailController extends Service {
     if (text === undefined || !isDeactivationCommand(text)) return
     const state = this.stateOf(agent.session)
     if (state.mode === 'off' && state.pending === null) return
-    this.appendMode(agent.session, 'off', null, 'natural-language')
+    this.setLiveMode(agent.session, 'off', null, 'natural-language')
   }
 
-  /** Append a complete post-change mode value. */
-  appendMode(session: Session, mode: PonytailMode, pending: PonytailMode | null, source: PonytailModeEvent['source']): void {
+  /** Store a complete live mode value without adding a custom session event. */
+  setLiveMode(session: Session, mode: PonytailMode, pending: PonytailMode | null, source: PonytailModeEvent['source']): void {
     const current = this.stateOf(session)
-    session.append(PONYTAIL_MODE_EVENT, {
+    this.modes.set(session, {
       mode,
       pending,
       source,
@@ -217,10 +204,10 @@ export class PonytailController extends Service {
     const target = current.pending ?? current.mode
     if (target === mode) return 'noop'
     if (agent.status === 'running') {
-      this.appendMode(agent.session, current.mode, mode, 'pending')
+      this.setLiveMode(agent.session, current.mode, mode, 'pending')
       return 'pending'
     }
-    this.appendMode(agent.session, mode, null, 'command')
+    this.setLiveMode(agent.session, mode, null, 'command')
     return 'committed'
   }
 

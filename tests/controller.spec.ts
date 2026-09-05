@@ -74,7 +74,7 @@ function registerAgent(ctx: Context, id: string, meta?: { parentSession?: Agent[
 }
 
 describe('Ponytail Host integration', () => {
-  it('loads through Alpha.4 services, records mode events, and handles pending commands', async () => {
+  it('loads through Alpha.4 services, keeps live mode state, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/session-start', { agent, source: 'startup' })
@@ -85,7 +85,7 @@ describe('Ponytail Host integration', () => {
 
     ;(agent as unknown as { status: 'idle' | 'running' }).status = 'running'
     expect(ctx.ponytail.setMode(agent, 'ultra')).toBe('pending')
-    expect(ctx.sessionProjections.stateOf(agent.session, 'ponytail')).toMatchObject({ mode: 'full', pending: 'ultra' })
+    expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'full', pending: 'ultra' })
     const pendingPrompt = renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(agent)))
     expect(pendingPrompt).toContain('PONYTAIL MODE ACTIVE — level: ultra')
     expect(pendingPrompt).not.toContain('PONYTAIL MODE ACTIVE — level: full')
@@ -97,6 +97,7 @@ describe('Ponytail Host integration', () => {
     expect(result).toEqual({ kind: 'success', text: 'Ponytail mode: off.' })
     expect(ctx.ponytail.stateOf(agent.session).mode).toBe('off')
     expect(ctx.ponytail.policyFor(agent)).toBe('')
+    expect(agent.session.snapshotEvents().some(event => event.type === 'ponytail/mode')).toBe(false)
   })
 
   it('hides a competing base Ponytail skill from the model catalog', async () => {
@@ -172,7 +173,7 @@ describe('Ponytail Host integration', () => {
     expect(ctx.settings.get('ponytail')).toMatchObject({ subagentMatcher: '' })
   })
 
-  it('does not reset a mode that exists in a resumed seed prefix', async () => {
+  it('uses the configured default on resume without rewriting legacy events', async () => {
     const ctx = await boot()
     const session = ctx.sessions.create('session-resumed' as Agent['id'], {
       seed: [{
@@ -188,7 +189,7 @@ describe('Ponytail Host integration', () => {
     ctx.agents.register(agent)
     ctx.emit('agent/session-start', { agent, source: 'resume' })
 
-    expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'ultra', pending: null })
+    expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'full', pending: null })
     expect(session.snapshotEvents().filter(event => event.type === 'ponytail/mode')).toHaveLength(1)
   })
 

@@ -16,13 +16,13 @@ A reproduced failure is blocklisted only afterward; see the [compatibility recor
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.4
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.4/dsh-ponytail-0.2.4.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5/dsh-ponytail-0.2.5.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -39,7 +39,7 @@ The repository, release package, and plugin brand are all `dsh-ponytail`. Distri
 
 ## Modes and commands
 
-Each session records a complete `ponytail/mode` event and exposes a `ponytail` projection containing `mode` and `pending`. The four modes are `off`, `lite`, `full` (default), and `ultra`.
+Mode and pending selections are kept in memory for the live session. Restarting the Host or reloading the plugin resets them to the configured default. No custom session events are written, so uninstalling Ponytail does not prevent history loading. The four modes are `off`, `lite`, `full` (default), and `ultra`.
 
 ```text
 /ponytail                 show current mode
@@ -63,9 +63,9 @@ The Host namespace is `ponytail`:
 
 Resolution order is `PONYTAIL_*` environment variables, DSH Settings, the optional upstream `~/.config/ponytail/config.json`, then defaults. Subagents inherit their parent session mode by default; advanced deployments can still scope inheritance with `PONYTAIL_SUBAGENT_MATCHER` or `subagentMatcher` in the config file. Matching is case-insensitive and unanchored against DSH `agentPreset`; a missing preset inherits. Invalid regular expressions fail when the plugin loads or the setting is saved.
 
-When the DSH Web settings surface includes Plugins, the Ponytail card is collapsed by default and expands from its summary row into a responsive settings sheet for `defaultMode`. The startup notice is hidden by default, subagent inheritance remains automatic, and the optional matcher is kept out of the card to keep the common path focused. It responds to its own available width: narrow layouts use two mode columns, stack the actions, and keep 44px touch targets for the dsh-mobile settings drawer. The composer has no Ponytail-specific control; use `/ponytail <mode>` for an in-session change. `hideStatus` remains readable and writable for old configuration files but no longer controls browser UI.
+When the DSH Web settings surface includes Plugins, the Ponytail card is collapsed by default and expands from its summary row into a responsive settings sheet for `defaultMode`. The optional startup notice is unavailable on current runtimes, subagent inheritance remains automatic, and the optional matcher is kept out of the card to keep the common path focused. It responds to its own available width: narrow layouts use two mode columns, stack the actions, and keep 44px touch targets for the dsh-mobile settings drawer. The composer has no Ponytail-specific control; use `/ponytail <mode>` for an in-session change. `hideStatus` remains readable and writable for old configuration files but no longer controls browser UI.
 
-The startup notice is rendered through DSH's `shell.overlay` slot, shared by the desktop frame and dsh-mobile. `quietStartup` defaults to hiding only this notice; set `PONYTAIL_QUIET_STARTUP=false` or the config-file value to show it. It does not change modes, commands, or system-prompt injection.
+The optional startup notice is unavailable while live mode projections are disabled. `quietStartup` remains a compatibility setting.
 
 ## Development
 
@@ -80,3 +80,12 @@ The check also compares the keyless assembled Host transcript in `snapshots/pony
 
 See [README.zh.md](README.zh.md) for the Chinese guide and [UPSTREAM.md](UPSTREAM.md) for pinned provenance.
 See [DESIGN.md](DESIGN.md) for the architecture and synchronization boundaries.
+
+## Repairing older sessions
+
+Compressed repair requires the `zstd` executable on PATH. Logs written by 0.2.4 and earlier need a separate repair; upgrading does not rewrite history. Test a copy first and stop the owning Host before applying to the original. The default is a dry run. `--apply` preserves the original bytes in an exclusive `.before-ponytail-repair` backup and only marks Ponytail mode events ignorable. For rollback, stop the Host and restore the backup over the original file.
+
+```sh
+node scripts/repair-session.mjs /path/to/session.jsonl.zstd
+node scripts/repair-session.mjs --apply /path/to/session.jsonl.zstd
+```

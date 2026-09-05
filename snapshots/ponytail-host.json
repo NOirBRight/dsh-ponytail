@@ -24,15 +24,6 @@
     },
     "events": [
       {
-        "type": "ponytail/mode",
-        "data": {
-          "mode": "full",
-          "pending": null,
-          "source": "default",
-          "inheritedFrom": null
-        }
-      },
-      {
         "type": "request/header",
         "data": {
           "header": {

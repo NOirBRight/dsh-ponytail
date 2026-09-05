@@ -16,13 +16,13 @@
 固定 GitHub release（从源码安装）：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.4
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5
 ```
 
 GitHub release 的预构建 tarball：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.4/dsh-ponytail-0.2.4.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5/dsh-ponytail-0.2.5.tgz
 ```
 
 本地验收使用 checkout：
@@ -39,7 +39,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 ## 模式与命令
 
-每个会话记录完整的 `ponytail/mode` 事件，并提供包含 `mode` 与 `pending` 的 `ponytail` 投影。四种模式为 `off`、`lite`、`full`（默认）和 `ultra`。
+模式和 pending 选择保存在活跃会话内存中；重启宿主或重新加载插件后回到配置的默认值。不写自定义会话事件，因此卸载不会阻止历史加载。四种模式为 `off`、`lite`、`full`（默认）和 `ultra`。
 
 ```text
 /ponytail                 查看当前模式
@@ -63,9 +63,9 @@ Host 设置命名空间为 `ponytail`：
 
 配置优先级为：`PONYTAIL_*` 环境变量 → DSH Settings → 可选的上游 `~/.config/ponytail/config.json` → 默认值。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，仍可通过 `PONYTAIL_SUBAGENT_MATCHER` 或配置文件中的 `subagentMatcher` 使用大小写不敏感、非锚定匹配。缺少 preset 时允许继承。非法正则在加载插件或保存设置时直接报错。
 
-当 DSH Web 设置包含 Plugins 页面时，会显示默认折叠的响应式 Ponytail 设置卡；点击摘要行后展开，只编辑 `defaultMode`。启动提示默认关闭，子 Agent 继承保持自动生效，匹配器不占用设置卡空间。卡片按自身可用宽度响应：窄屏切为两列模式卡、堆叠操作区，并保持 44px 触控目标，因此可直接放入 dsh-mobile 的设置抽屉。输入区不再注入 Ponytail 控件；会话中切换模式请使用 `/ponytail <mode>`。`hideStatus` 继续读写以兼容旧配置，但不再控制浏览器界面。
+当 DSH Web 设置包含 Plugins 页面时，会显示默认折叠的响应式 Ponytail 设置卡；点击摘要行后展开，只编辑 `defaultMode`。当前启动提示不可用，子 Agent 继承保持自动生效，匹配器不占用设置卡空间。卡片按自身可用宽度响应：窄屏切为两列模式卡、堆叠操作区，并保持 44px 触控目标，因此可直接放入 dsh-mobile 的设置抽屉。输入区不再注入 Ponytail 控件；会话中切换模式请使用 `/ponytail <mode>`。`hideStatus` 继续读写以兼容旧配置，但不再控制浏览器界面。
 
-启动提示通过 DSH 的 `shell.overlay` 浮层槽位渲染，桌面端与 dsh-mobile 共用；`quietStartup` 默认隐藏这条提示，需要时可通过 `PONYTAIL_QUIET_STARTUP=false` 或配置文件显式开启，不影响模式、命令或系统提示。
+当前未启用实时模式投影，可选启动提示不可用；`quietStartup` 保留为兼容配置。
 
 ## 开发
 
@@ -81,3 +81,12 @@ pnpm run check
 上游版本记录见 [UPSTREAM.md](UPSTREAM.md)。
 
 架构取舍与同步边界见 [DESIGN.md](DESIGN.md)。
+
+## 修复旧会话
+
+修复压缩日志需要 PATH 中的 `zstd` 命令。0.2.4 及更早版本写入的 `ponytail/mode` 事件需要单独修复；升级不会自动修改历史。先对副本验收，修改原件前停止对应宿主。默认仅检查；添加 `--apply` 后先保存 `.before-ponytail-repair` 原始备份，再只补充可忽略标记。不要同时写入同一会话；回滚时停止宿主后用备份恢复原文件。
+
+```sh
+node scripts/repair-session.mjs /path/to/session.jsonl.zstd
+node scripts/repair-session.mjs --apply /path/to/session.jsonl.zstd
+```

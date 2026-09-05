@@ -1,6 +1,6 @@
 {
   "name": "dsh-ponytail",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Ponytail modes, skills, commands, and GUI integration for DeepSeek Harness",
   "private": false,
   "type": "module",
@@ -27,13 +27,14 @@
     "README.zh.md",
     "DESIGN.md",
     "LICENSE",
-    "UPSTREAM.md"
+    "UPSTREAM.md",
+    "scripts/repair-session.mjs"
   ],
   "scripts": {
     "clean:build": "node scripts/clean-build.mjs",
     "build": "pnpm run clean:build && tsc -p tsconfig.build.json && tsdown",
     "bundle": "tsdown",
-    "test": "vitest run",
+    "test": "vitest run && node --test tests/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "tsc -p tsconfig.json --noEmit",
     "pack:check": "node scripts/check-pack.mjs",

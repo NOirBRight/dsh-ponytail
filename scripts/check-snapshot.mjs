@@ -7,6 +7,8 @@ import { Context } from '@deepseek-ai/cordis'
 import { Loader } from '@deepseek-ai/cordis-plugin-loader'
 import { AgentRegistry, assembleContextFor } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
+import { JsonlSessionPersistence } from '@deepseek-ai/dsh-session-persistence-jsonl'
+import { repairFile } from './repair-session.mjs'
 import { SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
 import { SettingsProvider } from '@deepseek-ai/dsh-settings'
@@ -68,6 +70,10 @@ async function snapshotValue(ctx, agent, assembly) {
   }
 }
 
+function eventsContainPonytail(session) {
+  return session.snapshotEvents().some(event => event.type === 'ponytail/mode')
+}
+
 async function main() {
   const previousEnvironment = Object.fromEntries(environmentNames.map(name => [name, process.env[name]]))
   for (const name of environmentNames) delete process.env[name]
@@ -101,6 +107,35 @@ async function main() {
       },
       reason: 'initial',
     })
+    assert.equal(eventsContainPonytail(session), false)
+    const storageRoot = join(configRoot, 'sessions')
+    const writer = new Context()
+    await writer.plugin(SessionStore)
+    await writer.plugin(JsonlSessionPersistence, { root: storageRoot, compression: 'none' })
+    await writer.sessionPersistence.create(session.header)
+    await writer.sessionPersistence.append(session.id, session.snapshotEvents())
+    const path = writer.sessionPersistence.locate(session.header).path
+    await writer.fiber.dispose()
+
+    // A fresh Host has never loaded Ponytail or changed its event catalog.
+    const reader = new Context()
+    try {
+      await reader.plugin(SessionStore)
+      await reader.plugin(JsonlSessionPersistence, { root: storageRoot, compression: 'none' })
+      const restored = await reader.sessionPersistence.inspect(session.id)
+      assert.deepEqual(restored.events, session.snapshotEvents())
+      const original = await readFile(path, 'utf8')
+      const legacy = { type: 'ponytail/mode', seq: session.snapshotEvents().length, time: Date.now(), data: { mode: 'full', pending: null, source: 'default', inheritedFrom: null } }
+      await writeFile(path, original + JSON.stringify(legacy) + '\n')
+      await assert.rejects(reader.sessionPersistence.inspect(session.id), /unknown to this harness/)
+      await repairFile(path, true)
+      const repaired = await reader.sessionPersistence.inspect(session.id)
+      assert.equal(repaired.events.at(-1).ignorable, true)
+      assert.deepEqual(repaired.events.slice(0, -1), session.snapshotEvents())
+      console.log('uninstall smoke passed: fresh Host reads new logs and repaired legacy logs without Ponytail')
+    } finally {
+      await reader.fiber.dispose()
+    }
     const actual = await snapshotValue(ctx, agent, assembly)
     const serialized = `${JSON.stringify(actual, null, 2)}\n`
 
