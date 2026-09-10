@@ -37,7 +37,8 @@ export function repairText(text) {
 
 /** Dry-run by default; applying creates an exclusive byte-for-byte backup before atomic replacement. */
 export async function repairFile(path, apply = false) {
-  if (!/session\.jsonl(?:\.zstd)?$/.test(path)) throw new Error('Expected session.jsonl or session.jsonl.zstd')
+  // V0 logs are session.jsonl[.zstd]; V1+ generations are session.v<N>.jsonl[.zstd].
+  if (!/session(?:\.v\d+)?\.jsonl(?:\.zstd)?$/.test(path)) throw new Error('Expected session.jsonl[.zstd] or session.v<N>.jsonl[.zstd]')
   const original = await readFile(path)
   const compressed = path.endsWith('.zstd')
   const decoded = compressed ? decodeZstd(original) : original
@@ -62,6 +63,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const args = process.argv.slice(2)
   const apply = args[0] === '--apply'
   const paths = apply ? args.slice(1) : args
-  if (paths.length === 0) throw new Error('Usage: node scripts/repair-session.mjs [--apply] /path/to/session.jsonl[.zstd] ...')
+  if (paths.length === 0) throw new Error('Usage: node scripts/repair-session.mjs [--apply] /path/to/session[.v<N>].jsonl[.zstd] ...')
   for (const path of paths) console.log(JSON.stringify({ path, ...await repairFile(path, apply) }))
 }

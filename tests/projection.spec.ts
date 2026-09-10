@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { SESSION_FORMAT_VERSION, type SessionHeader } from '@deepseek-ai/dsh-session'
 import { createPonytailProjectionDefinition, targetMode, type PonytailModeEvent } from '../src/projection.ts'
 
-const header = { version: 0, id: 'session-test' as never, createdAt: 0, isSeeded: false }
+const header: SessionHeader = { version: SESSION_FORMAT_VERSION, id: 'session-test' as never, createdAt: 0, isSeeded: false }
 const event = (data: PonytailModeEvent) => ({ type: 'ponytail/mode', time: 1, seq: 0, data }) as never
 
 describe('ponytail projection', () => {
