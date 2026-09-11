@@ -13,16 +13,16 @@ A reproduced failure is blocklisted only afterward; see the [compatibility recor
 
 ## Install
 
-Pinned GitHub release (source install):
+Latest:
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5-015rc1
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.5.tgz
 ```
 
-Prebuilt GitHub release tarball:
+Fixed GitHub release:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1/dsh-ponytail-0.2.5.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1b/dsh-ponytail-0.2.5.tgz
 ```
 
 Lab checkout for local acceptance:

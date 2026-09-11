@@ -13,16 +13,16 @@
 
 ## 安装
 
-固定 GitHub release（从源码安装）：
+Latest：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5-015rc1
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.5.tgz
 ```
 
-GitHub release 的预构建 tarball：
+固定 GitHub release：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1/dsh-ponytail-0.2.5.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1b/dsh-ponytail-0.2.5.tgz
 ```
 
 本地验收使用 checkout：
