@@ -1,10 +1,10 @@
 # dsh-ponytail
 
-`dsh-ponytail` 是面向 DeepSeek Harness Alpha.4 的独立 bundle，把 Ponytail 的最小实现策略、六个技能、会话模式、命令、子 Agent 继承和 Web GUI 设置接入 DSH。它不修改也不复制 DeepSeek Harness Core。
+`dsh-ponytail` 是面向 DeepSeek Harness 的独立 bundle，把 Ponytail 的最小实现策略、六个技能、会话模式、命令、子 Agent 继承和 Web GUI 设置接入 DSH。它不修改也不复制 DeepSeek Harness Core。
 
 ## 兼容性
 
-已验证运行时是 DeepSeek Harness `0.1.2-alpha.4` 与 `0.1.2-rc.1`（Cordis `4.0.2`）；这份记录只是证据，不是 allowlist。
+已验证运行时是 DeepSeek Harness `0.1.5-rc.1`（当前）以及历史上的 `0.1.2-alpha.4` / `0.1.2-rc.1`（Cordis `4.0.2`）；这份记录只是证据，不是 allowlist。
 
 未知的新版本会先打一条 warning，再按正常挂载路径 best-effort 尝试，不会因为未验证而跳过。
 
@@ -16,13 +16,13 @@
 固定 GitHub release（从源码安装）：
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5-015rc1
 ```
 
 GitHub release 的预构建 tarball：
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5/dsh-ponytail-0.2.5.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1/dsh-ponytail-0.2.5.tgz
 ```
 
 本地验收使用 checkout：
@@ -33,7 +33,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 第一阶段只在 `~/.dsh-rc1-canary` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
-此 bundle 固定兼容 `dsh-v0.1.2-alpha.4` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
+此 bundle 固定兼容 `dsh-v0.1.5-rc.1` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
 仓库、发行包与插件品牌统一为 `dsh-ponytail`。仅通过 GitHub release 分发：不带 scope 的 `dsh-ponytail` npm 名称已被其他维护者占用，因此不启用 `npm publish`（不配置 `NPM_TOKEN`）。
 
@@ -74,7 +74,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` 会运行单测、类型检查、Host/Web 构建、Alpha.4 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
+`pnpm run check` 会运行单测、类型检查、Host/Web 构建、0.1.5-rc.1 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
 
 检查还会比较 `snapshots/ponytail-host.json` 中的无密钥 assembled Host transcript；确认运行时变化符合预期后，可用 `pnpm run snapshot:record` 刷新它。
 

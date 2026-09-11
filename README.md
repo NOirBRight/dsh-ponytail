@@ -1,10 +1,10 @@
 # dsh-ponytail
 
-`dsh-ponytail` is an independent DeepSeek Harness Alpha.4 bundle that brings Ponytail's minimal-code policy, six skills, session modes, commands, subagent inheritance, and Web GUI settings to DSH. It does not modify or copy DeepSeek Harness Core.
+`dsh-ponytail` is an independent DeepSeek Harness bundle that brings Ponytail's minimal-code policy, six skills, session modes, commands, subagent inheritance, and Web GUI settings to DSH. It does not modify or copy DeepSeek Harness Core.
 
 ## Compatibility
 
-Verified runtimes are DeepSeek Harness `0.1.2-alpha.4` and `0.1.2-rc.1` on Cordis `4.0.2`; this record is evidence, not an allowlist.
+Verified runtimes are DeepSeek Harness `0.1.5-rc.1` (current) and historically `0.1.2-alpha.4` / `0.1.2-rc.1` on Cordis `4.0.2`; this record is evidence, not an allowlist.
 
 Unknown newer runtimes are attempted on a best-effort basis after one warning, and the plugin keeps its normal mount path.
 
@@ -16,13 +16,13 @@ A reproduced failure is blocklisted only afterward; see the [compatibility recor
 Pinned GitHub release (source install):
 
 ```sh
-dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5
+dsh plugin --profile web add github:NOirBRight/dsh-ponytail#v0.2.5-015rc1
 ```
 
 Prebuilt GitHub release tarball:
 
 ```sh
-dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5/dsh-ponytail-0.2.5.tgz
+dsh plugin --profile web add https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.5-015rc1/dsh-ponytail-0.2.5.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -33,7 +33,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 For the first acceptance pass, install the link only in the `~/.dsh-rc1-canary` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
-The bundle is built for `dsh-v0.1.2-alpha.4` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
+The bundle is built for `dsh-v0.1.5-rc.1` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
 
 The repository, release package, and plugin brand are all `dsh-ponytail`. Distribution is GitHub release only: the unscoped `dsh-ponytail` npm name is owned by another publisher, so `npm publish` stays disabled (no `NPM_TOKEN`).
 
@@ -74,7 +74,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` runs unit tests, typecheck, Host/Web builds, Alpha.4 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
+`pnpm run check` runs unit tests, typecheck, Host/Web builds, 0.1.5-rc.1 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
 
 The check also compares the keyless assembled Host transcript in `snapshots/ponytail-host.json`; after reviewing an intentional runtime change, refresh it with `pnpm run snapshot:record`.
 
