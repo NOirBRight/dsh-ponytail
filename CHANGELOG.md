@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.6] - 2026-09-12
+
+- DSH Host packages are no longer version-locked. `@deepseek-ai/dsh-*` peers are `*` and optional; unknown Hosts warn once and still mount. Cordis stays `>=4.0.2 <5.0.0`. Compile-target `devDependencies` remain `0.1.5-rc.1`.
+
 ## [0.2.5] - 2026-09-05
 
 - Keep mode selections in memory instead of writing required custom events, so uninstalling Ponytail does not block new conversation history. Restarting resets the mode; optional mode-projection startup notices are unavailable.
