@@ -13,13 +13,13 @@
 Latest：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.7.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.8.tgz
 ```
 
 固定 GitHub release：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.7/dsh-ponytail-0.2.7.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.8/dsh-ponytail-0.2.8.tgz
 ```
 
 本地验收使用 checkout：
@@ -30,7 +30,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 第一阶段只在 `~/.dsh-rc1-canary` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
-此 bundle 固定兼容 `dsh-v0.1.5-rc.1` 与 `@dietrichgebert/ponytail@4.9.0`。上游技能内容随 bundle 本地发布，运行时不访问网络。
+此 bundle 以 `dsh-v0.1.5-rc.1` 类型编译，并在 `dsh-v0.1.6-alpha.1` 上 Lab 验收。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
 仓库、发行包与插件品牌统一为 `dsh-ponytail`。仅通过 GitHub release 分发：不带 scope 的 `dsh-ponytail` npm 名称已被其他维护者占用，因此不启用 `npm publish`（不配置 `NPM_TOKEN`）。
 

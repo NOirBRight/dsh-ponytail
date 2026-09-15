@@ -6,7 +6,7 @@
 
 ## 运行时分工
 
-- Host 服务 `PonytailController` 注册六个上游 skill、`/ponytail` 命令、动态系统提示段，并在串行 `agent/created` 上初始化会话模式（使用 payload 的 `source`，不得 `await agent.whenIdle()`）。基础 `ponytail` skill 仅允许用户调用，并在 step 边界从模型目录移除其他 Provider 的同名副本，避免与动态系统提示重复。
+- Host 服务 `PonytailController` 注册六个上游 skill、`/ponytail` 命令、动态系统提示段，并在串行 `agent/created` 上初始化会话模式。Target Release `0.1.6-alpha.1` 在该事件 payload 上公开 `source`（`'startup' | 'resume' | 'clear' | 'compact'`）。编译目标 `0.1.5-rc.1` 的类型只有 `{ agent }`，运行时按公开字段收窄，缺字段当作 `startup`。listener 不得 `await agent.whenIdle()`。基础 `ponytail` skill 仅允许用户调用，并在 step 边界从模型目录移除其他 Provider 的同名副本，避免与动态系统提示重复。
 - 当前模式和 pending 模式仅保存在活跃 Session 对象中；进程重启后使用默认模式。
 - 命令在 Agent 运行中只写 pending，下一次提示组装直接使用 pending 模式并在该 step 提交；自然语言关闭在消息进入 inbox 时提交 `off`，早于该请求的提示组装。
 - 子 Agent 在创建时读取父会话投影。`subagentMatcher` 只限制带 `agentPreset` 的子 Agent；没有 preset 时保持上游的 fail-open 行为。
@@ -36,4 +36,4 @@
 
 ## 兼容性边界
 
-`package.json` 的 peer 范围覆盖 `0.1.2-alpha.4`、`0.1.2-rc.1` 与当前验证目标 `0.1.5-rc.1`；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名、发行包名与插件品牌统一为 `dsh-ponytail`，`cordis.patch.yml` 挂载该发行包并保留 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由当前 runtime 原地读取。
+`package.json` 的 peer 范围覆盖 `0.1.2-alpha.4`、`0.1.2-rc.1`、`0.1.5-rc.1` 与当前验证目标 `0.1.6-alpha.1`；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名、发行包名与插件品牌统一为 `dsh-ponytail`，`cordis.patch.yml` 挂载该发行包并保留 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由当前 runtime 原地读取。

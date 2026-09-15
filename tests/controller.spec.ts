@@ -104,6 +104,13 @@ describe('Ponytail Host integration', () => {
     expect(agent.session.snapshotEvents().some(event => event.type === 'ponytail/mode')).toBe(false)
   })
 
+  it('treats agent/created without source as a fresh startup', async () => {
+    const ctx = await boot()
+    const agent = registerAgent(ctx, 'session-untyped-created')
+    ctx.emit('agent/created', { agent })
+    expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'full', pending: null, source: 'default' })
+  })
+
   it('hides a competing base Ponytail skill from the model catalog', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-catalog')

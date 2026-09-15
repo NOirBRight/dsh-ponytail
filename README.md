@@ -13,13 +13,13 @@ Verified Hosts in `package.json#dsh.compatibility.dshReleases` are evidence, not
 Latest:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.7.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.8.tgz
 ```
 
 Fixed GitHub release:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.7/dsh-ponytail-0.2.7.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.8/dsh-ponytail-0.2.8.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -30,7 +30,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 For the first acceptance pass, install the link only in the `~/.dsh-rc1-canary` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
-The bundle is built for `dsh-v0.1.5-rc.1` and `@dietrichgebert/ponytail@4.9.0`. It ships the upstream skill content locally, so requests do not fetch the network.
+The bundle compiles against `dsh-v0.1.5-rc.1` types and is Lab-verified on `dsh-v0.1.6-alpha.1`. It ships the upstream skill content locally, so requests do not fetch the network.
 
 The repository, release package, and plugin brand are all `dsh-ponytail`. Distribution is GitHub release only: the unscoped `dsh-ponytail` npm name is owned by another publisher, so `npm publish` stays disabled (no `NPM_TOKEN`).
 

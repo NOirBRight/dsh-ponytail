@@ -61,6 +61,17 @@ declare module '@deepseek-ai/cordis' {
   }
 }
 
+/** 0.1.6 publishes `source` on serial `agent/created`. Compile-target 0.1.5 types omit it. */
+function isSessionStartSource(value: unknown): value is SessionStartSource {
+  return value === 'startup' || value === 'resume' || value === 'clear' || value === 'compact'
+}
+
+/** Read the public 0.1.6 field; hosts that omit it behave like a fresh `startup`. */
+function createdSource(payload: object): SessionStartSource {
+  const source = 'source' in payload ? payload.source : undefined
+  return isSessionStartSource(source) ? source : 'startup'
+}
+
 /** One DSH session's Ponytail controller. */
 export class PonytailController extends Service {
   static inject = inject
@@ -98,7 +109,7 @@ export class PonytailController extends Service {
     for (const skill of discoverBundledSkills()) ctx.skills.register(skill)
 
     ctx.on('agent/created', (payload) => {
-      this.initializeSession(payload.agent, (payload as unknown as { source: SessionStartSource }).source)
+      this.initializeSession(payload.agent, createdSource(payload))
     })
     ctx.on('agent/inbox/inserted', ({ agent, message }) => {
       this.applyNaturalDeactivation(agent, [message])

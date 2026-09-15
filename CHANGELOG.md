@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.8] - 2026-09-16
+
+- Read `source` from the public 0.1.6 `agent/created` payload at runtime; compile-target types still omit the field. A missing field is treated as `startup`. Provenance lists Lab-verified `0.1.6-alpha.1`.
+
 ## [0.2.7] - 2026-09-16
 
 - Initialize live session mode from serial `agent/created` (payload `source`). The listener stays synchronous and does not `await agent.whenIdle()`.
