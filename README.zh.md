@@ -13,13 +13,13 @@
 Latest：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.6.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.7.tgz
 ```
 
 固定 GitHub release：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.6/dsh-ponytail-0.2.6.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.7/dsh-ponytail-0.2.7.tgz
 ```
 
 本地验收使用 checkout：

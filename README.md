@@ -13,13 +13,13 @@ Verified Hosts in `package.json#dsh.compatibility.dshReleases` are evidence, not
 Latest:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.6.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.7.tgz
 ```
 
 Fixed GitHub release:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.6/dsh-ponytail-0.2.6.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.7/dsh-ponytail-0.2.7.tgz
 ```
 
 Lab checkout for local acceptance:
