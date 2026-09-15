@@ -2,11 +2,11 @@
 
 ## 目标
 
-`dsh-ponytail` 是针对 DeepSeek Harness `0.1.5-rc.1`（并保持与 `0.1.2-alpha.4` / `0.1.2-rc.1` 的历史兼容证据）的独立适配器。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
+`dsh-ponytail` 是针对 DeepSeek Harness `0.1.6-alpha.1` 的独立适配器（编译目标仍为 `0.1.5-rc.1`，并保持与 `0.1.2-alpha.4` / `0.1.2-rc.1` 的历史兼容证据）。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
 
 ## 运行时分工
 
-- Host 服务 `PonytailController` 注册六个上游 skill、`/ponytail` 命令、动态系统提示段和 Agent 生命周期监听器。基础 `ponytail` skill 仅允许用户调用，并在 step 边界从模型目录移除其他 Provider 的同名副本，避免与动态系统提示重复。
+- Host 服务 `PonytailController` 注册六个上游 skill、`/ponytail` 命令、动态系统提示段，并在串行 `agent/created` 上初始化会话模式（使用 payload 的 `source`，不得 `await agent.whenIdle()`）。基础 `ponytail` skill 仅允许用户调用，并在 step 边界从模型目录移除其他 Provider 的同名副本，避免与动态系统提示重复。
 - 当前模式和 pending 模式仅保存在活跃 Session 对象中；进程重启后使用默认模式。
 - 命令在 Agent 运行中只写 pending，下一次提示组装直接使用 pending 模式并在该 step 提交；自然语言关闭在消息进入 inbox 时提交 `off`，早于该请求的提示组装。
 - 子 Agent 在创建时读取父会话投影。`subagentMatcher` 只限制带 `agentPreset` 的子 Agent；没有 preset 时保持上游的 fail-open 行为。

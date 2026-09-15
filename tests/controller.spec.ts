@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import { AgentRegistry, agentEvents, assembleContextFor, type Agent } from '@deepseek-ai/dsh-agent'
+import { AgentRegistry, agentEvents, assembleContextFor, type Agent, type SessionStartSource } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { SessionLogOffset, SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
@@ -73,11 +73,15 @@ function registerAgent(ctx: Context, id: string, meta?: { parentSession?: Agent[
   return agent
 }
 
+function created(agent: Agent, source: SessionStartSource) {
+  return { agent, source }
+}
+
 describe('Ponytail Host integration', () => {
   it('loads through Alpha.4 services, keeps live mode state, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', created(agent, 'startup'))
 
     expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'full', pending: null, source: 'default' })
     await expect(ctx.skills.list()).resolves.toHaveLength(6)
@@ -103,7 +107,7 @@ describe('Ponytail Host integration', () => {
   it('hides a competing base Ponytail skill from the model catalog', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-catalog')
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', created(agent, 'startup'))
     const catalog = {
       content: [{ type: 'text', text: '- `ponytail`: duplicate\n- `ponytail-review`: keep' }],
       source: { kind: 'skill-catalog', entries: [{ name: 'ponytail' }, { name: 'ponytail-review' }] },
@@ -125,11 +129,11 @@ describe('Ponytail Host integration', () => {
   it('deactivates only an exact text-only request and inherits a live parent mode', async () => {
     const ctx = await boot()
     const parent = registerAgent(ctx, 'session-parent')
-    ctx.emit('agent/session-start', { agent: parent, source: 'startup' })
+    ctx.emit('agent/created', created(parent, 'startup'))
     ctx.ponytail.setMode(parent, 'lite')
 
     const child = registerAgent(ctx, 'session-child', { parentSession: parent.id, agentPreset: 'Worker-General' })
-    ctx.emit('agent/session-start', { agent: child, source: 'startup' })
+    ctx.emit('agent/created', created(child, 'startup'))
     expect(ctx.ponytail.stateOf(child.session)).toMatchObject({ mode: 'lite', source: 'inherit', inheritedFrom: parent.id })
 
     ctx.ponytail.applyNaturalDeactivation(child, [{ content: [{ type: 'text', text: 'add a normal mode toggle' }] }] as never)
@@ -142,20 +146,37 @@ describe('Ponytail Host integration', () => {
     expect(renderPrompt(await ctx.systemPrompt.assemble(assembleContextFor(child)))).not.toContain('PONYTAIL MODE ACTIVE')
   })
 
+  it('inherits on serial agent/created without waiting for agent.whenIdle', async () => {
+    const ctx = await boot()
+    const parent = registerAgent(ctx, 'session-parent-serial')
+    ctx.emit('agent/created', created(parent, 'startup'))
+    ctx.ponytail.setMode(parent, 'ultra')
+
+    const child = registerAgent(ctx, 'session-child-serial', { parentSession: parent.id, agentPreset: 'Worker-General' })
+    Object.assign(child, { whenIdle: () => new Promise<void>(() => undefined) })
+
+    await ctx.serial('agent/created', created(child, 'startup'))
+    expect(ctx.ponytail.stateOf(child.session)).toMatchObject({
+      mode: 'ultra',
+      source: 'inherit',
+      inheritedFrom: parent.id,
+    })
+  }, 1000)
+
   it('scopes child injection by agentPreset while allowing missing preset metadata', async () => {
     process.env.PONYTAIL_SUBAGENT_MATCHER = 'worker'
     const ctx = await boot()
     const parent = registerAgent(ctx, 'session-parent')
-    ctx.emit('agent/session-start', { agent: parent, source: 'startup' })
+    ctx.emit('agent/created', created(parent, 'startup'))
     ctx.ponytail.setMode(parent, 'ultra')
 
     const excluded = registerAgent(ctx, 'session-excluded', { parentSession: parent.id, agentPreset: 'explore' })
-    ctx.emit('agent/session-start', { agent: excluded, source: 'startup' })
+    ctx.emit('agent/created', created(excluded, 'startup'))
     expect(ctx.ponytail.stateOf(excluded.session).mode).toBe('off')
     expect(ctx.ponytail.policyFor(excluded)).toBe('')
 
     const unknown = registerAgent(ctx, 'session-unknown', { parentSession: parent.id })
-    ctx.emit('agent/session-start', { agent: unknown, source: 'startup' })
+    ctx.emit('agent/created', created(unknown, 'startup'))
     expect(ctx.ponytail.stateOf(unknown.session).mode).toBe('ultra')
     expect(ctx.ponytail.policyFor(unknown)).toContain('PONYTAIL MODE ACTIVE')
   })
@@ -163,7 +184,7 @@ describe('Ponytail Host integration', () => {
   it('persists the default command through the DSH settings provider', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-settings')
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', created(agent, 'startup'))
     await expect(ctx.ponytail.handleCommand(agent, 'default lite')).resolves.toEqual({
       kind: 'success',
       text: 'Ponytail default mode set to lite.',
@@ -187,7 +208,7 @@ describe('Ponytail Host integration', () => {
     })
     const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} } as unknown as Agent
     ctx.agents.register(agent)
-    ctx.emit('agent/session-start', { agent, source: 'resume' })
+    ctx.emit('agent/created', created(agent, 'resume'))
 
     expect(ctx.ponytail.stateOf(session)).toMatchObject({ mode: 'full', pending: null })
     expect(session.snapshotEvents().filter(event => event.type === 'ponytail/mode')).toHaveLength(1)

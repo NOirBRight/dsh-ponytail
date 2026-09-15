@@ -56,7 +56,7 @@ try {
   const session = ctx.sessions.create('loader-smoke-session')
   const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} }
   ctx.agents.register(agent)
-  ctx.emit('agent/session-start', { agent, source: 'startup' })
+  ctx.emit('agent/created', { agent, source: 'startup' })
   assert.deepEqual(ctx.ponytail.stateOf(session), {
     mode: 'full',
     pending: null,

@@ -2,7 +2,7 @@
 
 import { Context, Service } from '@deepseek-ai/cordis'
 import Schema from '@deepseek-ai/schemastery'
-import type { Agent, PreStepDecision } from '@deepseek-ai/dsh-agent'
+import type { Agent, PreStepDecision, SessionStartSource } from '@deepseek-ai/dsh-agent'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-agent'
 import type {} from '@deepseek-ai/dsh-commands'
@@ -97,8 +97,8 @@ export class PonytailController extends Service {
 
     for (const skill of discoverBundledSkills()) ctx.skills.register(skill)
 
-    ctx.on('agent/session-start', ({ agent, source }) => {
-      this.initializeSession(agent, source)
+    ctx.on('agent/created', (payload) => {
+      this.initializeSession(payload.agent, (payload as unknown as { source: SessionStartSource }).source)
     })
     ctx.on('agent/inbox/inserted', ({ agent, message }) => {
       this.applyNaturalDeactivation(agent, [message])
@@ -150,7 +150,7 @@ export class PonytailController extends Service {
   }
 
   /** Initialize live mode state, inheriting an active parent when available. */
-  initializeSession(agent: Agent, source: 'startup' | 'resume' | 'clear' | 'compact'): void {
+  initializeSession(agent: Agent, source: SessionStartSource): void {
     const session = agent.session
     if (source !== 'startup' && this.modes.has(session)) return
 

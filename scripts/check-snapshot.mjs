@@ -144,7 +144,7 @@ async function main() {
     const session = ctx.sessions.create('snapshot-session')
     const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} }
     ctx.agents.register(agent)
-    ctx.emit('agent/session-start', { agent, source: 'startup' })
+    ctx.emit('agent/created', { agent, source: 'startup' })
     const assembly = await ctx.systemPrompt.assemble(assembleContextFor(agent))
     // V3 envelope: request/header carries no system text; the rendered prompt is surface node 0.
     session.append('request/header', {

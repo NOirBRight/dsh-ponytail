@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+
+- Initialize live session mode from serial `agent/created` (payload `source`). The listener stays synchronous and does not `await agent.whenIdle()`.
+
 ## [0.2.6] - 2026-09-12
 
 - DSH Host packages are no longer version-locked. `@deepseek-ai/dsh-*` peers are `*` and optional; unknown Hosts warn once and still mount. Cordis stays `>=4.0.2 <5.0.0`. Compile-target `devDependencies` remain `0.1.5-rc.1`.
