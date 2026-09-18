@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '../src/config.ts'
 import { PonytailSettingsCard, type PonytailSettingsCardProps } from '../src/client/PonytailSettingsCard.tsx'
-import { formatStartupNotice } from '../src/client/PonytailStartupNotice.tsx'
+import { formatStartupNotice, mainViewSessionId } from '../src/client/PonytailStartupNotice.tsx'
 import { en, zh } from '../src/client/locales.ts'
 
 const settingsSnapshot = (value = DEFAULT_SETTINGS, writable = true) => ({
@@ -43,16 +43,36 @@ describe('Ponytail browser surfaces', () => {
     expect(formatStartupNotice('full', (key, params) => `${zh[key]}:${String(params?.mode)}`)).toBe('Ponytail 已加载：{mode}:full')
   })
 
-  it('renders a collapsed plugin card without composer-only controls', () => {
+  it('renders the Plugins-page form without the retired Settings collapse chrome', () => {
     const markup = renderToStaticMarkup(<PonytailSettingsCard {...settingsProps()} />)
-    expect(markup).toContain('Ponytail')
-    expect(markup).toContain('aria-expanded="false"')
-    expect(markup).toContain('展开 Ponytail 设置')
-    expect(markup).not.toContain('新会话默认模式')
+    expect(markup).toContain('新会话默认模式')
+    expect(markup).toContain('保存')
+    expect(markup).not.toContain('aria-expanded')
+    expect(markup).not.toContain('展开 Ponytail 设置')
     expect(markup).not.toContain('隐藏启动提示')
-    expect(markup).not.toContain('保存')
     expect(markup).not.toContain('隐藏会话模式控件')
     expect(markup).not.toContain('🐴')
+  })
+
+  it('renders only the description as the Plugins-page summary', () => {
+    const markup = renderToStaticMarkup(<PonytailSettingsCard {...settingsProps()} view="summary" />)
+    expect(markup).toContain('选择新会话的默认规则。')
+    expect(markup).not.toContain('新会话默认模式')
+    expect(markup).not.toContain('保存')
+  })
+
+  it('reads the main-view Session from retainedBy, with current as fallback', () => {
+    expect(mainViewSessionId({
+      byId: {
+        other: { retainedBy: {} },
+        live: { retainedBy: { mainView: 1 } },
+      },
+    })).toBe('live')
+    expect(mainViewSessionId({
+      current: 'legacy',
+      byId: { legacy: {} },
+    })).toBe('legacy')
+    expect(mainViewSessionId({ byId: {} })).toBeUndefined()
   })
 
   it('keeps the settings sheet usable in narrow mobile containers', async () => {

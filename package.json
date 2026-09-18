@@ -1,6 +1,6 @@
 {
   "name": "dsh-ponytail",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Ponytail modes, skills, commands, and GUI integration for DeepSeek Harness",
   "private": false,
   "type": "module",
@@ -90,7 +90,8 @@
         "0.1.2-alpha.4": "compatible",
         "0.1.2-rc.1": "compatible",
         "0.1.5-rc.1": "compatible",
-        "0.1.6-alpha.1": "compatible"
+        "0.1.6-alpha.1": "compatible",
+        "0.1.6-alpha.2": "compatible"
       }
     }
   },

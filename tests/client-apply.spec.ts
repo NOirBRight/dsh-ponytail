@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { apply } from '../src/client/index.tsx'
 
 describe('Ponytail browser contribution', () => {
-  it('registers settings and the frame overlay while leaving composer slots untouched', () => {
+  it('registers the Plugins-page form and the frame overlay while leaving composer slots untouched', () => {
     const injected: string[] = []
     const ctx = {
       effect: (effect: () => void) => { effect() },
@@ -14,6 +14,6 @@ describe('Ponytail browser contribution', () => {
       },
     }
     apply(ctx as never)
-    expect(injected).toEqual(['settings.plugin.item', 'shell.overlay'])
+    expect(injected).toEqual(['plugins.bundle.config', 'shell.overlay'])
   })
 })

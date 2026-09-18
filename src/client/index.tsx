@@ -24,6 +24,18 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     /** Ponytail settings copy. */
     ponytail: PonytailLocaleKey
   }
+  interface SlotMap {
+    /**
+     * Bundle configuration on the Plugins page, keyed by package name.
+     * Declared here so this plugin can compile against older Host types that
+     * still only know `settings.plugin.item`.
+     */
+    'plugins.bundle.config': {
+      kind: 'keyed'
+      scope: 'root'
+      owner: { readonly view: 'summary' | 'page' }
+    }
+  }
 }
 
 /** Locale namespace owned by this browser half. */
@@ -51,15 +63,15 @@ function settingOps(value: PonytailSettings): readonly SettingsPathOpView[] {
   })) as unknown as readonly SettingsPathOpView[]
 }
 
-/** Mount the Settings contribution over DSH's existing slots. */
+/** Mount the Plugins-page form and the frame overlay. */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-ponytail: dictionaries')
   const scope = ctx.settingsScope.bind<PonytailSettings>({ namespace: 'ponytail' })
   const source = settingsObservable(scope)
 
-  ctx.slots.inject('settings.plugin.item', () => ctx.slots.register({
-    name: 'settings.plugin.item',
-    key: 'ponytail',
+  ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
+    name: 'plugins.bundle.config',
+    key: 'dsh-ponytail',
     locale: NS,
     inject: (): PonytailSettingsCardInjected => ({
       hooks: { settings: source },
