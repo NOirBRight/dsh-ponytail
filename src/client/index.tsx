@@ -27,8 +27,9 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
     /**
      * Bundle configuration on the Plugins page, keyed by package name.
-     * Declared here so this plugin can compile against older Host types that
-     * still only know `settings.plugin.item`.
+     * Compile-target types still only know `settings.plugin.item`; Alpha.2
+     * declares this slot instead. Owner matches official PluginConfigViewProps
+     * (`view: 'page'` is what the page renders).
      */
     'plugins.bundle.config': {
       kind: 'keyed'
@@ -63,15 +64,18 @@ function settingOps(value: PonytailSettings): readonly SettingsPathOpView[] {
   })) as unknown as readonly SettingsPathOpView[]
 }
 
-/** Mount the Plugins-page form and the frame overlay. */
-export function apply(ctx: ClientContext): void {
-  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-ponytail: dictionaries')
-  const scope = ctx.settingsScope.bind<PonytailSettings>({ namespace: 'ponytail' })
-  const source = settingsObservable(scope)
+type SettingsSlotName = 'plugins.bundle.config' | 'settings.plugin.item'
 
-  ctx.slots.inject('plugins.bundle.config', () => ctx.slots.register({
-    name: 'plugins.bundle.config',
-    key: 'dsh-ponytail',
+function settingsCard(
+  ctx: ClientContext,
+  name: SettingsSlotName,
+  key: string,
+  source: ObservableSnapshot<SettingsScopeSnapshot<PonytailSettings>>,
+  scope: SettingsScope<PonytailSettings>,
+): void {
+  ctx.slots.inject(name, () => ctx.slots.register({
+    name,
+    key,
     locale: NS,
     inject: (): PonytailSettingsCardInjected => ({
       hooks: { settings: source },
@@ -86,6 +90,20 @@ export function apply(ctx: ClientContext): void {
       },
     }),
   }, PonytailSettingsCard))
+}
+
+/**
+ * Mount the settings form on whichever Plugins slot this Host declares.
+ * `inject` waits until the slot exists, so Alpha.2 never mounts the retired
+ * Settings card and Alpha.1 never mounts `plugins.bundle.config`.
+ */
+export function apply(ctx: ClientContext): void {
+  ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-ponytail: dictionaries')
+  const scope = ctx.settingsScope.bind<PonytailSettings>({ namespace: 'ponytail' })
+  const source = settingsObservable(scope)
+
+  settingsCard(ctx, 'plugins.bundle.config', 'dsh-ponytail', source, scope)
+  settingsCard(ctx, 'settings.plugin.item', 'ponytail', source, scope)
 
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',

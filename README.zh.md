@@ -13,13 +13,13 @@
 Latest：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.8.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.10.tgz
 ```
 
 固定 GitHub release：
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.8/dsh-ponytail-0.2.8.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.10/dsh-ponytail-0.2.10.tgz
 ```
 
 本地验收使用 checkout：
@@ -30,7 +30,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 第一阶段只在 `~/.dsh-rc1-canary` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
-此 bundle 以 `dsh-v0.1.5-rc.1` 类型编译，并在 `dsh-v0.1.6-alpha.1` 上 Lab 验收。上游技能内容随 bundle 本地发布，运行时不访问网络。
+此 bundle 以 `dsh-v0.1.5-rc.1` 类型编译，并在 `dsh-v0.1.6-alpha.2` 上 Lab 验收。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
 仓库、发行包与插件品牌统一为 `dsh-ponytail`。仅通过 GitHub release 分发：不带 scope 的 `dsh-ponytail` npm 名称已被其他维护者占用，因此不启用 `npm publish`（不配置 `NPM_TOKEN`）。
 
@@ -60,7 +60,7 @@ Host 设置命名空间为 `ponytail`：
 
 配置优先级为：`PONYTAIL_*` 环境变量 → DSH Settings → 可选的上游 `~/.config/ponytail/config.json` → 默认值。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，仍可通过 `PONYTAIL_SUBAGENT_MATCHER` 或配置文件中的 `subagentMatcher` 使用大小写不敏感、非锚定匹配。缺少 preset 时允许继承。非法正则在加载插件或保存设置时直接报错。
 
-当 DSH Web 设置包含 Plugins 页面时，会显示默认折叠的响应式 Ponytail 设置卡；点击摘要行后展开，只编辑 `defaultMode`。当前启动提示不可用，子 Agent 继承保持自动生效，匹配器不占用设置卡空间。卡片按自身可用宽度响应：窄屏切为两列模式卡、堆叠操作区，并保持 44px 触控目标，因此可直接放入 dsh-mobile 的设置抽屉。输入区不再注入 Ponytail 控件；会话中切换模式请使用 `/ponytail <mode>`。`hideStatus` 继续读写以兼容旧配置，但不再控制浏览器界面。
+当 DSH Web 存在 Plugins 页面时，Ponytail 把只编辑 `defaultMode` 的表单挂到 `plugins.bundle.config`（key `dsh-ponytail`，仅 `view: 'page'`）。仍声明已退休 `settings.plugin.item` 的宿主（Alpha.1）走同一表单降级。Plugins 页面自己画标题；本 bundle 不占用 `plugins.item`（那是官方 host-plane 卡片列表）。当前启动提示不可用，子 Agent 继承保持自动生效，匹配器不占用表单空间。表单按自身可用宽度响应：窄屏切为两列模式卡、堆叠操作区，并保持 44px 触控目标，因此可直接放入 dsh-mobile 的设置抽屉。输入区不再注入 Ponytail 控件；会话中切换模式请使用 `/ponytail <mode>`。`hideStatus` 继续读写以兼容旧配置，但不再控制浏览器界面。
 
 当前未启用实时模式投影，可选启动提示不可用；`quietStartup` 保留为兼容配置。
 

@@ -18,10 +18,13 @@ export interface PonytailSettingsCardInjected {
   reset: () => Promise<void>
 }
 
-/** Renderer props for the keyed `plugins.bundle.config` page on the Plugins page. */
+/** Renderer props for the Plugins-page form (`view: 'page'`). */
 export type PonytailSettingsCardProps =
   {
-    /** `summary` is the Plugins-page one-liner; `page` is the saveable form. */
+    /**
+     * Official `PluginConfigViewProps.view`. The Plugins page only asks
+     * `plugins.bundle.config` for `'page'`; `'summary'` is a no-op here.
+     */
     view?: 'summary' | 'page'
   }
   & InjectFace<PonytailSettingsCardInjected>
@@ -40,13 +43,15 @@ function cx(...values: Array<string | false | undefined>): string {
 }
 
 /**
- * Render Ponytail's Plugins-page form. The page draws the title; this
- * component supplies the summary one-liner or the saveable mode picker.
+ * Render Ponytail's saveable mode picker. The Plugins page draws the title
+ * and description; this form occupies `plugins.bundle.config` with
+ * `view: 'page'`. On Hosts that still declare `settings.plugin.item`, the
+ * same form mounts there so Alpha.1 keeps a GUI path.
  * `hideStatus` stays in the draft for persistence compatibility but has no
  * UI control because Ponytail no longer contributes to the composer.
  *
  * @param props - settings source, save/reset callbacks, locale, and view.
- * @returns the summary line, the form, or an unavailable marker.
+ * @returns the form, nothing for `summary`, or an unavailable marker.
  */
 export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, t }: PonytailSettingsCardProps) {
   const snapshot = useSettings(value => value)
@@ -60,7 +65,7 @@ export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, 
     if (!dirty && source !== undefined) setDraft({ ...source })
   }, [dirty, source])
 
-  if (view === 'summary') return <span>{t('settingsDescription')}</span>
+  if (view === 'summary') return null
   if (snapshot.status === 'unavailable') return null
   if (draft === undefined || source === undefined) return <p className={css.unavailable}>{t('unavailable')}</p>
 

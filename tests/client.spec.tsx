@@ -3,7 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '../src/config.ts'
 import { PonytailSettingsCard, type PonytailSettingsCardProps } from '../src/client/PonytailSettingsCard.tsx'
-import { formatStartupNotice, mainViewSessionId } from '../src/client/PonytailStartupNotice.tsx'
+import { formatStartupNotice } from '../src/client/PonytailStartupNotice.tsx'
+import { mainViewSessionId } from '../src/client/session-main-view.ts'
 import { en, zh } from '../src/client/locales.ts'
 
 const settingsSnapshot = (value = DEFAULT_SETTINGS, writable = true) => ({
@@ -25,8 +26,10 @@ function settingsProps(value = DEFAULT_SETTINGS): PonytailSettingsCardProps {
 describe('Ponytail browser surfaces', () => {
   it('keeps Chinese and English dictionaries in sync', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(zh).sort())
-    expect(zh.settingsDescription).toBe('选择新会话的默认规则。')
-    expect(en.settingsDescription).toBe('Choose the default mode for new sessions.')
+    expect(zh).not.toHaveProperty('settingsDescription')
+    expect(zh).not.toHaveProperty('expandSettings')
+    expect(zh).not.toHaveProperty('collapseSettings')
+    expect(zh).not.toHaveProperty('settingsTitle')
     expect(zh).not.toHaveProperty('agentsSection')
     expect(zh).not.toHaveProperty('subagentMatcher')
     expect(en).not.toHaveProperty('agentsSection')
@@ -54,11 +57,9 @@ describe('Ponytail browser surfaces', () => {
     expect(markup).not.toContain('🐴')
   })
 
-  it('renders only the description as the Plugins-page summary', () => {
+  it('renders nothing when the Plugins page asks the unused summary view', () => {
     const markup = renderToStaticMarkup(<PonytailSettingsCard {...settingsProps()} view="summary" />)
-    expect(markup).toContain('选择新会话的默认规则。')
-    expect(markup).not.toContain('新会话默认模式')
-    expect(markup).not.toContain('保存')
+    expect(markup).toBe('')
   })
 
   it('reads the main-view Session from retainedBy, with current as fallback', () => {
@@ -80,7 +81,7 @@ describe('Ponytail browser surfaces', () => {
     expect(css).toContain('container-type: inline-size')
     expect(css).toContain('@container (max-width: 560px)')
     expect(css).toContain('min-height: 44px')
-    expect(css).toContain('.pluginCard')
-    expect(css).toContain('.pluginHeader')
+    expect(css).not.toContain('.pluginCard')
+    expect(css).not.toContain('.pluginHeader')
   })
 })

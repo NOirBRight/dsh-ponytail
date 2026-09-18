@@ -13,13 +13,13 @@ Verified Hosts in `package.json#dsh.compatibility.dshReleases` are evidence, not
 Latest:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.8.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.10.tgz
 ```
 
 Fixed GitHub release:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.8/dsh-ponytail-0.2.8.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.10/dsh-ponytail-0.2.10.tgz
 ```
 
 Lab checkout for local acceptance:
@@ -30,7 +30,7 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 For the first acceptance pass, install the link only in the `~/.dsh-rc1-canary` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
-The bundle compiles against `dsh-v0.1.5-rc.1` types and is Lab-verified on `dsh-v0.1.6-alpha.1`. It ships the upstream skill content locally, so requests do not fetch the network.
+The bundle compiles against `dsh-v0.1.5-rc.1` types and is Lab-verified on `dsh-v0.1.6-alpha.2`. It ships the upstream skill content locally, so requests do not fetch the network.
 
 The repository, release package, and plugin brand are all `dsh-ponytail`. Distribution is GitHub release only: the unscoped `dsh-ponytail` npm name is owned by another publisher, so `npm publish` stays disabled (no `NPM_TOKEN`).
 
@@ -60,7 +60,7 @@ The Host namespace is `ponytail`:
 
 Resolution order is `PONYTAIL_*` environment variables, DSH Settings, the optional upstream `~/.config/ponytail/config.json`, then defaults. Subagents inherit their parent session mode by default; advanced deployments can still scope inheritance with `PONYTAIL_SUBAGENT_MATCHER` or `subagentMatcher` in the config file. Matching is case-insensitive and unanchored against DSH `agentPreset`; a missing preset inherits. Invalid regular expressions fail when the plugin loads or the setting is saved.
 
-When the DSH Web settings surface includes Plugins, the Ponytail card is collapsed by default and expands from its summary row into a responsive settings sheet for `defaultMode`. The optional startup notice is unavailable on current runtimes, subagent inheritance remains automatic, and the optional matcher is kept out of the card to keep the common path focused. It responds to its own available width: narrow layouts use two mode columns, stack the actions, and keep 44px touch targets for the dsh-mobile settings drawer. The composer has no Ponytail-specific control; use `/ponytail <mode>` for an in-session change. `hideStatus` remains readable and writable for old configuration files but no longer controls browser UI.
+When the DSH Web Plugins page is present, Ponytail mounts a saveable `defaultMode` form on `plugins.bundle.config` (key `dsh-ponytail`, `view: 'page'` only). On Hosts that still declare the retired `settings.plugin.item` slot, the same form mounts there so Alpha.1 keeps a GUI path. The Plugins page draws the title; this bundle does not occupy `plugins.item` (that list is for official host-plane cards). The optional startup notice is unavailable on current runtimes, subagent inheritance remains automatic, and the optional matcher is kept out of the form to keep the common path focused. The form responds to its own available width: narrow layouts use two mode columns, stack the actions, and keep 44px touch targets for the dsh-mobile settings drawer. The composer has no Ponytail-specific control; use `/ponytail <mode>` for an in-session change. `hideStatus` remains readable and writable for old configuration files but no longer controls browser UI.
 
 The optional startup notice is unavailable while live mode projections are disabled. `quietStartup` remains a compatibility setting.
 

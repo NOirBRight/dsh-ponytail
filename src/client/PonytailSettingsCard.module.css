@@ -1,103 +1,6 @@
-/* The card uses DSH alias tokens so it follows desktop and mobile themes. */
-.pluginCard {
-  list-style: none;
-  min-width: 0;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 12px;
-  background: var(--dsw-alias-bg-layer-3);
-  transition: border-color 160ms ease, background 160ms ease;
-}
-
-.pluginCard:hover {
-  border-color: var(--dsw-alias-label-dimmed);
-}
-
-.pluginCardOpen {
-  background: var(--dsw-alias-bg-layer-2);
-  border-color: var(--dsw-alias-label-dimmed);
-}
-
-.pluginHeader {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  box-sizing: border-box;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 0;
-  border-radius: 12px;
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.pluginHeader:focus-visible {
-  outline: 2px solid var(--dsw-alias-brand-primary);
-  outline-offset: -2px;
-}
-
-.pluginHeadText {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pluginName {
-  overflow: hidden;
-  color: var(--dsw-alias-label-primary);
-  font-size: 15px;
-  line-height: 21px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pluginDescription {
-  overflow: hidden;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 13px;
-  line-height: 20px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.pending {
-  flex: none;
-  padding: 1px 8px;
-  border-radius: 999px;
-  color: var(--dsw-alias-label-secondary);
-  background: var(--dsw-alias-bg-module-platform);
-  font-size: 11px;
-  line-height: 17px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.chevron {
-  flex: none;
-  width: 7px;
-  height: 7px;
-  margin: 0 3px 4px 4px;
-  border-right: 1.5px solid var(--dsw-alias-label-tertiary);
-  border-bottom: 1.5px solid var(--dsw-alias-label-tertiary);
-  transform: rotate(45deg);
-  transition: transform 160ms ease;
-}
-
-.chevronOpen {
-  margin-bottom: -4px;
-  transform: rotate(225deg);
-}
-
+/* Plugins-page form. Tokens follow desktop and mobile themes. */
 .pluginBody {
-  margin: 0 16px;
-  padding: 16px 0 8px;
-  border-top: 1px solid var(--dsw-alias-border-l2);
+  min-width: 0;
 }
 
 .section {
@@ -362,19 +265,6 @@
 }
 
 @container (max-width: 560px) {
-  .pluginHeader {
-    padding: 14px;
-  }
-
-  .pluginDescription {
-    overflow: visible;
-    white-space: normal;
-  }
-
-  .pluginBody {
-    margin-inline: 12px;
-  }
-
   .card {
     border-radius: 12px;
   }

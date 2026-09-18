@@ -1,11 +1,6 @@
 /** Bilingual copy for the Ponytail Settings card. */
 
 export const zh = {
-  settingsEyebrow: 'Ponytail 插件',
-  settingsTitle: 'Ponytail',
-  settingsDescription: '选择新会话的默认规则。',
-  expandSettings: '展开 Ponytail 设置',
-  collapseSettings: '收起 Ponytail 设置',
   defaultBehavior: '默认行为',
   defaultMode: '新会话默认模式',
   defaultModeHint: '只影响没有父会话继承的新会话。',
@@ -28,11 +23,6 @@ export const zh = {
 } as const
 
 export const en = {
-  settingsEyebrow: 'Ponytail plugin',
-  settingsTitle: 'Ponytail',
-  settingsDescription: 'Choose the default mode for new sessions.',
-  expandSettings: 'Expand Ponytail settings',
-  collapseSettings: 'Collapse Ponytail settings',
   defaultBehavior: 'Default behavior',
   defaultMode: 'Default mode for new sessions',
   defaultModeHint: 'Only applies when a session has no parent mode to inherit.',

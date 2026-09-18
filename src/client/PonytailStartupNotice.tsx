@@ -9,6 +9,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '../projection.ts'
 import type { PonytailSettings } from '../config.ts'
 import type { PonytailMode } from '../mode.ts'
+import { mainViewSessionId, projectedPonytailMode } from './session-main-view.ts'
 import css from './PonytailStartupNotice.module.css'
 
 /** Full notice lifetime; the stylesheet uses the same duration for fade-out. */
@@ -34,32 +35,6 @@ export function formatStartupNotice(mode: PonytailMode, t: StartupNoticeTranslat
   return t('startupNotice', { mode })
 }
 
-/** Session list facts needed to recover the former `current` selection. */
-export interface SessionListMainViewState {
-  readonly current?: string
-  readonly byId: object
-}
-
-function mainViewCount(row: unknown): number {
-  if (row === null || typeof row !== 'object') return 0
-  const retainedBy = (row as { retainedBy?: { mainView?: number } }).retainedBy
-  return retainedBy?.mainView ?? 0
-}
-
-/**
- * Return the Session occupying the main view.
- *
- * Alpha.2 dropped `SessionListState.current`. Occupancy is a positive
- * `retainedBy.mainView` count. `current` remains a fallback for Alpha.1
- * snapshots and older fixtures.
- */
-export function mainViewSessionId(state: SessionListMainViewState): string | undefined {
-  for (const [id, row] of Object.entries(state.byId)) {
-    if (mainViewCount(row) > 0) return id
-  }
-  return state.current
-}
-
 /**
  * Show one transient notice when the selected browser session becomes ready.
  * The session id is the de-duplication key, so projection updates and mode
@@ -72,12 +47,7 @@ export function mainViewSessionId(state: SessionListMainViewState): string | und
  */
 export function PonytailStartupNotice({ useSessions, settings, t }: PonytailStartupNoticeProps) {
   const currentId = useSessions(state => mainViewSessionId(state))
-  const currentMode = useSessions(state => {
-    const id = mainViewSessionId(state)
-    if (id === undefined) return undefined
-    const row = state.byId[id as keyof typeof state.byId]
-    return row?.projectionValues?.ponytail?.mode
-  })
+  const currentMode = useSessions(state => projectedPonytailMode(state))
   const settingsSnapshot = useSyncExternalStore(settings.subscribe, settings.getSnapshot, settings.getSnapshot)
   const settingsReady = settingsSnapshot.status !== 'loading'
   const quietStartup = settingsSnapshot.value?.quietStartup ?? true

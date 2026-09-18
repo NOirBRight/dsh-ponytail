@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.10] - 2026-09-18
+
+- Mount the `defaultMode` form on Alpha.2 `plugins.bundle.config` and keep `settings.plugin.item` as the Alpha.1 degrade path (`inject` waits for the slot the Host actually declares).
+- Provenance lists Lab-verified `0.1.6-alpha.2`. Occupancy for the startup notice lives in `session-main-view.ts`.
+
+## [0.2.9] - 2026-09-18
+
+- Move the browser settings form off the retired Settings collapse card onto the Plugins page for `0.1.6-alpha.2`.
+
 ## [0.2.8] - 2026-09-16
 
 - Read `source` from the public 0.1.6 `agent/created` payload at runtime; compile-target types still omit the field. A missing field is treated as `startup`. Provenance lists Lab-verified `0.1.6-alpha.1`.

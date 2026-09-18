@@ -2,7 +2,7 @@
 
 ## 目标
 
-`dsh-ponytail` 是针对 DeepSeek Harness `0.1.6-alpha.1` 的独立适配器（编译目标仍为 `0.1.5-rc.1`，并保持与 `0.1.2-alpha.4` / `0.1.2-rc.1` 的历史兼容证据）。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
+`dsh-ponytail` 是针对 DeepSeek Harness `0.1.6-alpha.2` 的独立适配器（编译目标仍为 `0.1.5-rc.1`，并保持与 `0.1.6-alpha.1` / `0.1.2-alpha.4` / `0.1.2-rc.1` 的历史兼容证据）。插件只依赖公开 DSH 扩展点，不修改、复制或 patch DSH Core；Host 与浏览器两面都由同一个 bundle 发布。
 
 ## 运行时分工
 
@@ -10,7 +10,7 @@
 - 当前模式和 pending 模式仅保存在活跃 Session 对象中；进程重启后使用默认模式。
 - 命令在 Agent 运行中只写 pending，下一次提示组装直接使用 pending 模式并在该 step 提交；自然语言关闭在消息进入 inbox 时提交 `off`，早于该请求的提示组装。
 - 子 Agent 在创建时读取父会话投影。`subagentMatcher` 只限制带 `agentPreset` 的子 Agent；没有 preset 时保持上游的 fail-open 行为。
-- 浏览器面通过 `settings.plugin.item` 公开默认折叠、点击展开的 Settings → Plugins 卡片，只编辑默认模式；启动提示默认隐藏，子 Agent 继承保持自动生效，高级 matcher 仍由配置层兼容。实时模式投影不可用时不显示会话启动提示。模式切换由 `/ponytail` 命令完成，浏览器不在 composer 中复制一套会话状态。
+- 浏览器面把只编辑默认模式的表单挂到 Plugins 页：Alpha.2 占用 `plugins.bundle.config`（包名 `dsh-ponytail`，页面只渲染 `view: 'page'`）；Alpha.1 及更早占用已退休的 `settings.plugin.item`（key `ponytail`）。`ctx.slots.inject` 在槽位未声明时等待，因此同一 bundle 不会在错误的宿主上挂错卡。启动提示默认隐藏，子 Agent 继承保持自动生效，高级 matcher 仍由配置层兼容。实时模式投影不可用时不显示会话启动提示。模式切换由 `/ponytail` 命令完成，浏览器不在 composer 中复制一套会话状态。
 
 ## 会话事件兼容
 
@@ -36,4 +36,4 @@
 
 ## 兼容性边界
 
-`package.json` 的 peer 范围覆盖 `0.1.2-alpha.4`、`0.1.2-rc.1`、`0.1.5-rc.1` 与当前验证目标 `0.1.6-alpha.1`；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名、发行包名与插件品牌统一为 `dsh-ponytail`，`cordis.patch.yml` 挂载该发行包并保留 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由当前 runtime 原地读取。
+`package.json` 的 peer 范围覆盖 `0.1.2-alpha.4`、`0.1.2-rc.1`、`0.1.5-rc.1` 与当前验证目标 `0.1.6-alpha.2`（`0.1.6-alpha.1` 仍为证据：Host 技能路径不变，设置 GUI 走 `settings.plugin.item` 降级）；不从工作区 `deepseek-harness` checkout 解析依赖。仓库名、发行包名与插件品牌统一为 `dsh-ponytail`，`cordis.patch.yml` 挂载该发行包并保留 Host/客户端功能标识。用户 profile 负责组合顺序。插件可以在官方 npm 包的 Loader、客户端模块系统和 CLI/Web 启动路径中独立加载；历史 Alpha.2 数据只保留在隔离归档中，不由当前 runtime 原地读取。

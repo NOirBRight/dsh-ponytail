@@ -6,8 +6,10 @@ The upstream skills are copied into `skills/` so an installed DSH bundle has no 
 
 To update the copied skills in a development checkout, set `PONYTAIL_SOURCE` to a checked-out upstream repository and run `node scripts/sync-upstream.mjs`. Review the resulting skill-content diff and run the complete check before opening a dependency-update PR.
 
-The current verified DSH compatibility target is `dsh-v0.1.6-alpha.1` at commit
-`0a15e36e7f82b6ed45af6fa9759f29b40dcd965d`. Historical evidence also covers
+The current verified DSH compatibility target is `dsh-v0.1.6-alpha.2` at commit
+`ddefc45fbc7f8e46dd73185e68295696d1297887`. Historical evidence also covers
+`dsh-v0.1.6-alpha.1` at commit
+`0a15e36e7f82b6ed45af6fa9759f29b40dcd965d`,
 `dsh-v0.1.5-rc.1` at commit `183f08e9c6dde7e36cd2318eaee70b0da08fb35e`,
 `dsh-v0.1.2-alpha.4` at commit `4e84901e6471b79ec0338099867ebb4606d12bb5`
 and `dsh-v0.1.2-rc.1`.
