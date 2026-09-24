@@ -77,7 +77,6 @@ function settingsCard(
         { op: 'unset', path: ['defaultMode'] },
         { op: 'unset', path: ['hideStatus'] },
         { op: 'unset', path: ['quietStartup'] },
-        { op: 'unset', path: ['subagentMatcher'] },
       ], expectedRevision),
     }),
   }, PonytailSettingsCard))

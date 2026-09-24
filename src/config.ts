@@ -19,10 +19,10 @@ export interface PonytailSettings {
   subagentMatcher: string
 }
 
-/** Loader Config values are volatile references owned by the running fiber. */
+/** Live Loader preferences; matcher is validated at load, not editable through forms. */
 export type PonytailConfig = {
-  [K in keyof PonytailSettings]: Volatile<PonytailSettings[K]>
-}
+  [K in Exclude<keyof PonytailSettings, 'subagentMatcher'>]: Volatile<PonytailSettings[K]>
+} & { subagentMatcher: string }
 
 /** A partial settings source, before schema defaults are applied. */
 export type PonytailSettingsLayer = Partial<PonytailSettings>
@@ -140,8 +140,15 @@ export const Config = Schema.object({
     .default(configDefaults.quietStartup)
     .volatile()
     .description('Hide the browser session-start notice by default.'),
-  subagentMatcher: Schema.string()
+  // Keep regex validation on the Host only: the official form projection loses transform callbacks.
+  subagentMatcher: Schema.transform(
+    Schema.string(),
+    value => {
+      new RegExp(value, 'i')
+      return value
+    },
+    true,
+  )
     .default(configDefaults.subagentMatcher)
-    .volatile()
     .description('Case-insensitive unanchored regular expression over agentPreset.'),
 })

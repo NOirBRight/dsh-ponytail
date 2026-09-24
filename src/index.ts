@@ -104,7 +104,7 @@ export class PonytailController extends Service {
         defaultMode: this.config.defaultMode.get(),
         hideStatus: this.config.hideStatus.get(),
         quietStartup: this.config.quietStartup.get(),
-        subagentMatcher: this.config.subagentMatcher.get(),
+        subagentMatcher: this.config.subagentMatcher,
       },
     })
   }

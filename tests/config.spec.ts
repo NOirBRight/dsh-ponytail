@@ -17,12 +17,19 @@ describe('Ponytail Loader Config precedence', () => {
     expect(() => compileSubagentMatcher('')).not.toThrow()
   })
 
-  it('uses volatile Loader fields while runtime validates the matcher', () => {
+  it('rejects invalid matchers at config load while retaining advanced patterns', () => {
+    expect(() => Config({ subagentMatcher: '[' })).toThrow()
+    const matcher = '(?<=worker)-\\d+'
+    expect(Config({ subagentMatcher: matcher }).subagentMatcher).toBe(matcher)
+    expect(compileSubagentMatcher(matcher)?.test('WORKER-42')).toBe(true)
+  })
+
+  it('uses volatile Loader fields for live preferences and a static validated matcher', () => {
     const config = Config({ defaultMode: 'ultra', subagentMatcher: 'worker' })
     expect(config.defaultMode.get()).toBe('ultra')
     expect(config.hideStatus.get()).toBeTypeOf('boolean')
     expect(config.quietStartup.get()).toBeTypeOf('boolean')
-    expect(config.subagentMatcher.get()).toBe('worker')
+    expect(config.subagentMatcher).toBe('worker')
   })
 
   it('uses XDG_CONFIG_HOME for upstream compatibility', () => {
