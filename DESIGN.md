@@ -24,7 +24,7 @@
 
 ## 配置决策
 
-设置优先级固定为 `PONYTAIL_*` 环境变量 → Loader Config → 上游 `~/.config/ponytail/config.json` → 插件默认值。环境变量在每次读取时覆盖其他层；四个可编辑偏好属于导出的 `Config` volatile 字段，表单写入由 `ctx.settings` 校验并持久化到当前 profile。`ctx.settings.configure({ auto: false }, ctx.fiber)` 只关闭自动页面，不负责注册这些字段。
+设置优先级固定为 `PONYTAIL_*` 环境变量 → Loader Config → 上游 `~/.config/ponytail/config.json` → 插件默认值。环境变量在每次读取时覆盖其他层；`defaultMode`、`hideStatus`、`quietStartup` 是可通过 `ConfigForms` 实时写入的 volatile 字段。`subagentMatcher` 是加载时校验的静态 Loader Config 字段（也可从环境变量或上游文件提供），不能通过表单热写；官方 Alpha.2 的表单投影无法在浏览器保留正则转换回调。`ctx.settings.configure({ auto: false }, ctx.fiber)` 只关闭自动页面，不负责注册这些字段。
 
 `hideStatus` 是保留给旧配置的兼容字段，不再控制浏览器 UI；`quietStartup` 默认隐藏浏览器启动提示，也可由环境变量或配置文件显式关闭。两者不改变模式、命令、skill 或系统提示。
 

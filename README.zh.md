@@ -58,7 +58,7 @@ Loader Config 条目的 id 为 `ponytail`（由 `cordis.patch.yml` 声明）：
 - `quietStartup`：`true`（默认隐藏启动提示；高级配置字段，设置卡不显示）
 - `subagentMatcher`：空值（全部子 Agent；高级配置字段，设置卡不显示）
 
-配置优先级为：`PONYTAIL_*` 环境变量 → profile 持久化的 Loader Config → 可选的上游 `~/.config/ponytail/config.json` → 内置默认值。Config 默认值会纳入上游配置文件内容。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，可用 `PONYTAIL_SUBAGENT_MATCHER` 或 `subagentMatcher`。匹配大小写不敏感且不锚定；缺少 preset 时允许继承。非法正则会在插件加载或 Config 表单写入前被拒绝。
+配置优先级为：`PONYTAIL_*` 环境变量 → profile 持久化的 Loader Config → 可选的上游 `~/.config/ponytail/config.json` → 内置默认值。Config 默认值会纳入上游配置文件内容。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，可用 `PONYTAIL_SUBAGENT_MATCHER` 或静态 Loader 字段 `subagentMatcher`。匹配大小写不敏感且不锚定；缺少 preset 时允许继承。非法正则在插件加载时被拒绝；matcher 不是 volatile 字段，Config 表单写入会被拒绝，不会保存错误表达式。
 
 DSH Alpha.2 的默认模式卡片位于 Plugins 页的 `plugins.bundle.config` 槽位（key `dsh-ponytail`，仅 `view: 'page'`）。它通过 `ctx.configForms.get('ponytail')` 读取 Loader 条目，提交时携带已读取的 revision，并可清除 Loader 覆盖；`/ponytail default <mode>` 也会持久化到同一字段。不再保留旧 `settings.plugin.item` 路径。本 bundle 不占用官方 host-plane 卡片列表 `plugins.item`。当前运行时未启用实时模式投影，因此启动提示不可用；高级偏好与 matcher 不显示在模式卡片中。
 
