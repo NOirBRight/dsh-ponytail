@@ -6,21 +6,22 @@ The upstream skills are copied into `skills/` so an installed DSH bundle has no 
 
 To update the copied skills in a development checkout, set `PONYTAIL_SOURCE` to a checked-out upstream repository and run `node scripts/sync-upstream.mjs`. Review the resulting skill-content diff and run the complete check before opening a dependency-update PR.
 
-The current verified DSH compatibility target is `dsh-v0.1.6-alpha.2` at commit
-`ddefc45fbc7f8e46dd73185e68295696d1297887`. Historical evidence also covers
+The current compatibility target is the official DSH `0.1.7-alpha.2` package release. The exact source commit for this published release is not recorded here. Earlier compatibility evidence, retained for history only, covers
+`dsh-v0.1.6-alpha.2` at commit `ddefc45fbc7f8e46dd73185e68295696d1297887`,
 `dsh-v0.1.6-alpha.1` at commit
 `0a15e36e7f82b6ed45af6fa9759f29b40dcd965d`,
 `dsh-v0.1.5-rc.1` at commit `183f08e9c6dde7e36cd2318eaee70b0da08fb35e`,
-`dsh-v0.1.2-alpha.4` at commit `4e84901e6471b79ec0338099867ebb4606d12bb5`
+`dsh-v0.1.2-alpha.4` at commit `4e84901e6471b79ec0338099867ebb4606d12bb5`,
 and `dsh-v0.1.2-rc.1`.
 
-Official Alpha.4 / 0.1.2-rc.1 / 0.1.5-rc.1 can read ignorable external events
-but cannot append that marker through the public Session API. Until an
-official writer option is available, this plugin keeps mode selections in
-memory and emits no custom session events. It does not mutate the Host event
-catalog. On 0.1.5-rc.1 the assembled persona / policy text is recorded in
-`system/message` (V3 envelope); `request/header` no longer carries system
-prompt body. Snapshot repair smokes locate the single temp-tree session
+Alpha.2 and the historical Alpha.4 / 0.1.2-rc.1 / 0.1.5-rc.1 releases can read
+unknown ignorable events, but the public `Session.append()` API still has no
+writer option for that marker. Current Ponytail mode selections therefore stay
+in memory and emit no custom session events; the plugin does not mutate the
+Host event catalog.
+The 0.1.5-rc.1 snapshot's V3 envelope is historical: its `request/header` no
+longer carries system prompt body; assembled persona / policy text is recorded
+in `system/message`. Snapshot repair smokes locate the single temp-tree session
 artifact with `findSessionArtifact` because the persistence handle hides
 paths — a test seam, not a Host API. Historical Alpha.2 logs remain isolated
 and are not resumed by current runtimes.

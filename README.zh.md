@@ -4,9 +4,9 @@
 
 ## 兼容性
 
-宿主 `@deepseek-ai/dsh-*` 不锁定发行号：peer 为 `*` 且 optional。`devDependencies` 钉编译目标（`0.1.5-rc.1`）。Cordis 保持 `>=4.0.2 <5.0.0`。
+宿主 `@deepseek-ai/dsh-*` peer 范围为 `>=0.1.7-alpha.2 <0.1.8`；`devDependencies` 精确固定 Alpha.2。Cordis peer 范围为 `>=4.0.4 <5.0.0`，开发依赖固定 `4.0.4`。
 
-`package.json#dsh.compatibility.dshReleases` 里的已验证宿主是证据，不是允许列表。未知的新宿主告警一次后仍按正常路径挂载。只有复现过的故障才会加入 blocklist。
+`package.json#dsh.compatibility.dshReleases` 将 Alpha.2 标记为本构建的兼容目标。未知运行时仍会告警一次并尝试正常挂载；只有复现过的故障才会加入 blocklist。
 
 ## 安装
 
@@ -25,12 +25,12 @@ dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/
 本地验收使用 checkout：
 
 ```sh
-DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Workstation/dsh-ponytail
+DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Workstation/.worktrees/alpha2-compat/dsh-ponytail
 ```
 
 第一阶段只在 `~/.dsh-rc1-canary` / 3082 验收。不要修改生产 `~/.dsh` / 3080。
 
-此 bundle 以 `dsh-v0.1.5-rc.1` 类型编译，并在 `dsh-v0.1.6-alpha.2` 上 Lab 验收。上游技能内容随 bundle 本地发布，运行时不访问网络。
+此 bundle 以官方 DSH `0.1.7-alpha.2` 包的类型编译并以其为兼容目标。上游技能内容随 bundle 本地发布，运行时不访问网络。
 
 仓库、发行包与插件品牌统一为 `dsh-ponytail`。仅通过 GitHub release 分发：不带 scope 的 `dsh-ponytail` npm 名称已被其他维护者占用，因此不启用 `npm publish`（不配置 `NPM_TOKEN`）。
 
@@ -51,16 +51,16 @@ DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Wo
 
 ## 设置与 GUI
 
-Host 设置命名空间为 `ponytail`：
+Loader Config 条目的 id 为 `ponytail`（由 `cordis.patch.yml` 声明）：
 
 - `defaultMode`：`full`
 - `hideStatus`：`false`
 - `quietStartup`：`true`（默认隐藏启动提示；高级配置字段，设置卡不显示）
 - `subagentMatcher`：空值（全部子 Agent；高级配置字段，设置卡不显示）
 
-配置优先级为：`PONYTAIL_*` 环境变量 → DSH Settings → 可选的上游 `~/.config/ponytail/config.json` → 默认值。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，仍可通过 `PONYTAIL_SUBAGENT_MATCHER` 或配置文件中的 `subagentMatcher` 使用大小写不敏感、非锚定匹配。缺少 preset 时允许继承。非法正则在加载插件或保存设置时直接报错。
+配置优先级为：`PONYTAIL_*` 环境变量 → profile 持久化的 Loader Config → 可选的上游 `~/.config/ponytail/config.json` → 内置默认值。Config 默认值会纳入上游配置文件内容。子 Agent 默认继承父会话模式；需要按 `agentPreset` 限定范围时，可用 `PONYTAIL_SUBAGENT_MATCHER` 或 `subagentMatcher`。匹配大小写不敏感且不锚定；缺少 preset 时允许继承。非法正则会在插件加载或 Config 表单写入前被拒绝。
 
-当 DSH Web 存在 Plugins 页面时，Ponytail 把只编辑 `defaultMode` 的表单挂到 `plugins.bundle.config`（key `dsh-ponytail`，仅 `view: 'page'`）。仍声明已退休 `settings.plugin.item` 的宿主（Alpha.1）走同一表单降级。Plugins 页面自己画标题；本 bundle 不占用 `plugins.item`（那是官方 host-plane 卡片列表）。当前启动提示不可用，子 Agent 继承保持自动生效，匹配器不占用表单空间。表单按自身可用宽度响应：窄屏切为两列模式卡、堆叠操作区，并保持 44px 触控目标，因此可直接放入 dsh-mobile 的设置抽屉。输入区不再注入 Ponytail 控件；会话中切换模式请使用 `/ponytail <mode>`。`hideStatus` 继续读写以兼容旧配置，但不再控制浏览器界面。
+DSH Alpha.2 的默认模式卡片位于 Plugins 页的 `plugins.bundle.config` 槽位（key `dsh-ponytail`，仅 `view: 'page'`）。它通过 `ctx.configForms.get('ponytail')` 读取 Loader 条目，提交时携带已读取的 revision，并可清除 Loader 覆盖；`/ponytail default <mode>` 也会持久化到同一字段。不再保留旧 `settings.plugin.item` 路径。本 bundle 不占用官方 host-plane 卡片列表 `plugins.item`。当前运行时未启用实时模式投影，因此启动提示不可用；高级偏好与 matcher 不显示在模式卡片中。
 
 当前未启用实时模式投影，可选启动提示不可用；`quietStartup` 保留为兼容配置。
 
@@ -71,7 +71,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` 会运行单测、类型检查、Host/Web 构建、0.1.5-rc.1 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
+`pnpm run check` 会运行单测、类型检查、Host/Web 构建、0.1.7-alpha.2 Host/客户端加载器 smoke，以及 pack/install 检查。`scripts/sync-upstream.mjs` 从本地上游 checkout 更新 SKILL.md，不在运行时联网。
 
 检查还会比较 `snapshots/ponytail-host.json` 中的无密钥 assembled Host transcript；确认运行时变化符合预期后，可用 `pnpm run snapshot:record` 刷新它。
 

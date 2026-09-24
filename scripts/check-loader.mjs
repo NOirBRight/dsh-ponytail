@@ -1,29 +1,36 @@
 import { strict as assert } from 'node:assert'
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Service } from '@deepseek-ai/cordis'
 import { Loader } from '@deepseek-ai/cordis-plugin-loader'
 import { AgentRegistry } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
-import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
 import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-class MemorySettings extends SettingsProvider {
-  raw = {}
+class MemorySettings extends Service {
+  static inject = []
 
-  get writable() {
-    return true
+  values = {}
+
+  constructor(ctx) {
+    super(ctx, 'settings')
   }
 
-  async load() {
-    return structuredClone(this.raw)
+  configure() {
+    return () => {}
   }
 
-  async persist(ns, section) {
-    this.raw[ns] = structuredClone(section)
+  async mutate(ns, ops) {
+    const section = this.values[ns] ??= {}
+    for (const { op, path, value } of ops) {
+      const [field] = path
+      if (field === undefined) continue
+      if (op === 'set') section[field] = value
+      else delete section[field]
+    }
   }
 }
 
@@ -65,7 +72,7 @@ try {
   })
   assert.equal((await ctx.skills.list()).length, 6)
   assert.match(ctx.ponytail.policyFor(agent), /^PONYTAIL MODE ACTIVE — level: full/)
-  console.log('loader smoke passed: Alpha.4 Loader mounted the built Host plugin')
+  console.log('loader smoke passed: Alpha.2 Loader mounted the built Host plugin')
 } finally {
   await ctx.fiber.dispose()
 }

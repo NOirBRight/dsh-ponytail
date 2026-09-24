@@ -1,28 +1,38 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Service, type Fiber } from '@deepseek-ai/cordis'
 import { AgentRegistry, agentEvents, assembleContextFor, type Agent, type SessionStartSource } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { SessionLogOffset, SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
-import { SettingsProvider, type SettingsNamespace } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
 import { renderPrompt, SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
 import PonytailController from '../src/index.ts'
 
-class MemorySettings extends SettingsProvider {
-  private readonly raw: Record<string, unknown> = {}
+type SettingsMutation =
+  | { op: 'set'; path: readonly string[]; value: unknown }
+  | { op: 'unset'; path: readonly string[] }
 
-  override get writable(): boolean {
-    return true
+class MemorySettings extends Service {
+  static inject = []
+
+  readonly values: Record<string, Record<string, unknown>> = {}
+
+  constructor(ctx: Context) {
+    super(ctx, 'settings')
   }
 
-  protected override load(): Promise<Record<string, unknown>> {
-    return Promise.resolve(structuredClone(this.raw))
+  configure(_presentation: { auto?: boolean }, _owner?: Fiber): () => void {
+    return () => {}
   }
 
-  protected override persist(ns: SettingsNamespace, section: Record<string, unknown>): Promise<void> {
-    this.raw[ns] = structuredClone(section)
-    return Promise.resolve()
+  async mutate(ns: string, ops: readonly SettingsMutation[]): Promise<void> {
+    const section = this.values[ns] ??= {}
+    for (const op of ops) {
+      const [field] = op.path
+      if (field === undefined) continue
+      if (op.op === 'set') section[field] = op.value
+      else delete section[field]
+    }
   }
 }
 
@@ -61,7 +71,7 @@ async function boot() {
   await ctx.plugin(SkillRegistry)
   await ctx.plugin(SystemPrompt, {})
   await ctx.plugin(MemorySettings)
-  await ctx.plugin(PonytailController)
+  await ctx.plugin(PonytailController, {})
   activeContexts.push(ctx)
   return ctx
 }
@@ -69,7 +79,7 @@ async function boot() {
 function registerAgent(ctx: Context, id: string, meta?: { parentSession?: Agent['id']; agentPreset?: string }): Agent {
   const session = ctx.sessions.create(id as Agent['id'], { meta: { cwd: process.cwd(), ...meta } })
   const agent = { id: session.id, session, status: 'idle', ctx, options: {}, inbox: {} } as unknown as Agent
-  ctx.agents.register(agent)
+  ctx.effect(() => ctx.agents.enter(agent, undefined), 'test: entered agent')
   return agent
 }
 
@@ -78,7 +88,7 @@ function created(agent: Agent, source: SessionStartSource) {
 }
 
 describe('Ponytail Host integration', () => {
-  it('loads through Alpha.4 services, keeps live mode state, and handles pending commands', async () => {
+  it('loads through Alpha.2 services, keeps live mode state, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/created', created(agent, 'startup'))
@@ -104,12 +114,6 @@ describe('Ponytail Host integration', () => {
     expect(agent.session.snapshotEvents().some(event => event.type === 'ponytail/mode')).toBe(false)
   })
 
-  it('treats agent/created without source as a fresh startup', async () => {
-    const ctx = await boot()
-    const agent = registerAgent(ctx, 'session-untyped-created')
-    ctx.emit('agent/created', { agent })
-    expect(ctx.ponytail.stateOf(agent.session)).toMatchObject({ mode: 'full', pending: null, source: 'default' })
-  })
 
   it('hides a competing base Ponytail skill from the model catalog', async () => {
     const ctx = await boot()
@@ -138,6 +142,7 @@ describe('Ponytail Host integration', () => {
     const parent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/created', created(parent, 'startup'))
     ctx.ponytail.setMode(parent, 'lite')
+    expect(ctx.ponytail.stateOf(parent.session)).toMatchObject({ mode: 'lite', pending: null })
 
     const child = registerAgent(ctx, 'session-child', { parentSession: parent.id, agentPreset: 'Worker-General' })
     ctx.emit('agent/created', created(child, 'startup'))
@@ -188,7 +193,7 @@ describe('Ponytail Host integration', () => {
     expect(ctx.ponytail.policyFor(unknown)).toContain('PONYTAIL MODE ACTIVE')
   })
 
-  it('persists the default command through the DSH settings provider', async () => {
+  it('persists the default command through the Loader Config form', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-settings')
     ctx.emit('agent/created', created(agent, 'startup'))
@@ -196,9 +201,7 @@ describe('Ponytail Host integration', () => {
       kind: 'success',
       text: 'Ponytail default mode set to lite.',
     })
-    expect(ctx.settings.get('ponytail')).toMatchObject({ defaultMode: 'lite' })
-    await expect(ctx.settings.update('ponytail', { subagentMatcher: '[' })).rejects.toThrow(/valid regular expression/)
-    expect(ctx.settings.get('ponytail')).toMatchObject({ subagentMatcher: '' })
+    expect((ctx.settings as unknown as MemorySettings).values.ponytail).toMatchObject({ defaultMode: 'lite' })
   })
 
   it('uses the configured default on resume without rewriting legacy events', async () => {

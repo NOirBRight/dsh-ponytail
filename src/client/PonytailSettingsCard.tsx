@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
-import type { SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type { PonytailSettings } from '../config.ts'
 import type { PonytailMode } from '../mode.ts'
@@ -12,20 +12,22 @@ import css from './PonytailSettingsCard.module.css'
 /** Card actions and the settings snapshot injected by the browser plugin. */
 export interface PonytailSettingsCardInjected {
   hooks: {
-    settings: ObservableSnapshot<SettingsScopeSnapshot<PonytailSettings>>
+    settings: ObservableSnapshot<ConfigFormSnapshot<PonytailSettings>>
   }
-  save: (value: PonytailSettings) => Promise<void>
-  reset: () => Promise<void>
+  save: (value: PonytailMode, expectedRevision?: number) => Promise<boolean>
+  reset: (expectedRevision?: number) => Promise<boolean>
+}
+
+type ConfigPageForm = {
+  readonly state: ConfigFormSnapshot<Record<string, unknown>>
+  readonly mutate: ConfigForm<Record<string, unknown>>['mutate']
 }
 
 /** Renderer props for the Plugins-page form (`view: 'page'`). */
 export type PonytailSettingsCardProps =
   {
-    /**
-     * Official `PluginConfigViewProps.view`. The Plugins page only asks
-     * `plugins.bundle.config` for `'page'`; `'summary'` is a no-op here.
-     */
     view?: 'summary' | 'page'
+    form?: ConfigPageForm | undefined
   }
   & InjectFace<PonytailSettingsCardInjected>
   & PropsLocale<'ponytail'>
@@ -43,26 +45,23 @@ function cx(...values: Array<string | false | undefined>): string {
 }
 
 /**
- * Render Ponytail's saveable mode picker. The Plugins page draws the title
- * and description; this form occupies `plugins.bundle.config` with
- * `view: 'page'`. On Hosts that still declare `settings.plugin.item`, the
- * same form mounts there so Alpha.1 keeps a GUI path.
- * `hideStatus` stays in the draft for persistence compatibility but has no
- * UI control because Ponytail no longer contributes to the composer.
+ * Render Ponytail's saveable default-mode picker on the Plugins page.
+ * `hideStatus` stays part of Loader Config for compatibility but has no UI
+ * control because Ponytail no longer contributes to the composer.
  *
- * @param props - settings source, save/reset callbacks, locale, and view.
+ * @param props - settings snapshot, save/reset callbacks, locale, and view.
  * @returns the form, nothing for `summary`, or an unavailable marker.
  */
 export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, t }: PonytailSettingsCardProps) {
   const snapshot = useSettings(value => value)
-  const source = snapshot.value
-  const [draft, setDraft] = useState<PonytailSettings | undefined>(source === undefined ? undefined : { ...source })
+  const source = snapshot.value?.defaultMode
+  const [draft, setDraft] = useState<PonytailMode | undefined>(source)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    if (!dirty && source !== undefined) setDraft({ ...source })
+    if (!dirty && source !== undefined) setDraft(source)
   }, [dirty, source])
 
   if (view === 'summary') return null
@@ -70,16 +69,20 @@ export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, 
   if (draft === undefined || source === undefined) return <p className={css.unavailable}>{t('unavailable')}</p>
 
   const disabled = saving || !snapshot.writable
-  const edit = <K extends keyof PonytailSettings>(field: K, value: PonytailSettings[K]): void => {
-    setDraft(previous => ({ ...(previous ?? source), [field]: value }))
+  const edit = (value: PonytailMode): void => {
+    setDraft(value)
     setDirty(true)
     setError(null)
   }
   const submit = (): void => {
     setSaving(true)
     setError(null)
-    void save(draft).then(() => {
+    void save(draft, snapshot.revision).then((accepted) => {
       setSaving(false)
+      if (!accepted) {
+        setError(t('writeRejected'))
+        return
+      }
       setDirty(false)
     }, (reason: unknown) => {
       setSaving(false)
@@ -89,8 +92,12 @@ export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, 
   const clear = (): void => {
     setSaving(true)
     setError(null)
-    void reset().then(() => {
+    void reset(snapshot.revision).then((accepted) => {
       setSaving(false)
+      if (!accepted) {
+        setError(t('writeRejected'))
+        return
+      }
       setDirty(false)
     }, (reason: unknown) => {
       setSaving(false)
@@ -116,7 +123,7 @@ export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, 
           </div>
           <div className={css.modeGrid} role="group" aria-label={t('defaultMode')}>
             {MODES.map(mode => {
-              const selected = draft.defaultMode === mode
+              const selected = draft === mode
               const details = MODE_DETAILS[mode]
               return <button
                 key={mode}
@@ -124,7 +131,7 @@ export function PonytailSettingsCard({ view = 'page', useSettings, save, reset, 
                 className={cx(css.modeButton, selected && css.modeButtonSelected)}
                 aria-pressed={selected}
                 disabled={disabled}
-                onClick={() => { edit('defaultMode', mode) }}
+                onClick={() => { edit(mode) }}
               >
                 <span className={css.modeName}>
                   <strong>{t(details.label)}</strong>

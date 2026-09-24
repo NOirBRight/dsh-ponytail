@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
-import type { SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
@@ -18,7 +18,7 @@ const NOTICE_MS = 4_000
 /** Props for the root-scoped shell overlay entry. */
 export type PonytailStartupNoticeProps =
   PropsRuntime<'shell.overlay'>
-  & { settings: ObservableSnapshot<SettingsScopeSnapshot<PonytailSettings>> }
+  & { settings: ObservableSnapshot<ConfigFormSnapshot<PonytailSettings>> }
   & PropsLocale<'ponytail'>
 
 /** Narrow translator contract used by the pure notice formatter. */

@@ -1,9 +1,8 @@
-/** Browser half: Ponytail settings card and session-start notice. */
+/** Browser half: Ponytail's Loader preference page and session-start notice. */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
-import type { SettingsScope, SettingsScopeSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
-import type { SettingsPathOpView } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ConfigForm, ConfigFormSnapshot } from '@deepseek-ai/dsh-client-ui-settings/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
@@ -14,6 +13,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '../projection.ts'
+import { PONYTAIL_CONFIG_ENTRY_ID } from '../config-entry.ts'
 import type { PonytailSettings } from '../config.ts'
 import { PonytailSettingsCard, type PonytailSettingsCardInjected } from './PonytailSettingsCard.tsx'
 import { PonytailStartupNotice } from './PonytailStartupNotice.tsx'
@@ -25,16 +25,17 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     ponytail: PonytailLocaleKey
   }
   interface SlotMap {
-    /**
-     * Bundle configuration on the Plugins page, keyed by package name.
-     * Compile-target types still only know `settings.plugin.item`; Alpha.2
-     * declares this slot instead. Owner matches official PluginConfigViewProps
-     * (`view: 'page'` is what the page renders).
-     */
+    /** Bundle configuration on the Plugins page, keyed by package name. */
     'plugins.bundle.config': {
       kind: 'keyed'
       scope: 'root'
-      owner: { readonly view: 'summary' | 'page' }
+      owner: {
+        readonly view: 'summary' | 'page'
+        readonly form?: {
+          readonly state: ConfigFormSnapshot<Record<string, unknown>>
+          readonly mutate: ConfigForm<Record<string, unknown>>['mutate']
+        } | undefined
+      }
     }
   }
 }
@@ -42,36 +43,26 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 /** Locale namespace owned by this browser half. */
 export const NS = 'ponytail'
 
-/** Browser dependencies supplied by Alpha.4. */
 export const inject = [
-  'slots', 'locale', 'settingsScope', 'sessions',
+  'slots', 'locale', 'configForms', 'sessions',
 ]
 
-/** Build a stable observable view over a settings scope. */
-function settingsObservable(scope: SettingsScope<PonytailSettings>): ObservableSnapshot<SettingsScopeSnapshot<PonytailSettings>> {
+/** Build a stable observable view over the ConfigForm snapshot. */
+function settingsObservable(form: ConfigForm<PonytailSettings>): ObservableSnapshot<ConfigFormSnapshot<PonytailSettings>> {
   return {
-    getSnapshot: () => scope.getSnapshot(),
-    subscribe: listener => scope.subscribe(listener),
+    getSnapshot: () => form.getSnapshot(),
+    subscribe: listener => form.subscribe(listener),
   }
 }
 
-/** Convert a complete settings value into one atomic wire mutation. */
-function settingOps(value: PonytailSettings): readonly SettingsPathOpView[] {
-  return (Object.entries(value) as Array<[string, unknown]>).map(([field, item]) => ({
-    op: 'set' as const,
-    path: [field],
-    value: item,
-  })) as unknown as readonly SettingsPathOpView[]
-}
-
-type SettingsSlotName = 'plugins.bundle.config' | 'settings.plugin.item'
+type SettingsSlotName = 'plugins.bundle.config'
 
 function settingsCard(
   ctx: ClientContext,
   name: SettingsSlotName,
   key: string,
-  source: ObservableSnapshot<SettingsScopeSnapshot<PonytailSettings>>,
-  scope: SettingsScope<PonytailSettings>,
+  source: ObservableSnapshot<ConfigFormSnapshot<PonytailSettings>>,
+  form: ConfigForm<PonytailSettings>,
 ): void {
   ctx.slots.inject(name, () => ctx.slots.register({
     name,
@@ -79,31 +70,30 @@ function settingsCard(
     locale: NS,
     inject: (): PonytailSettingsCardInjected => ({
       hooks: { settings: source },
-      save: async value => { await scope.mutate(settingOps(value)) },
-      reset: async () => {
-        await scope.mutate([
-          { op: 'unset', path: ['defaultMode'] },
-          { op: 'unset', path: ['hideStatus'] },
-          { op: 'unset', path: ['quietStartup'] },
-          { op: 'unset', path: ['subagentMatcher'] },
-        ])
-      },
+      save: (value, expectedRevision) => form.mutate([
+        { op: 'set', path: ['defaultMode'], value },
+      ], expectedRevision),
+      reset: expectedRevision => form.mutate([
+        { op: 'unset', path: ['defaultMode'] },
+        { op: 'unset', path: ['hideStatus'] },
+        { op: 'unset', path: ['quietStartup'] },
+        { op: 'unset', path: ['subagentMatcher'] },
+      ], expectedRevision),
     }),
   }, PonytailSettingsCard))
 }
 
+
 /**
- * Mount the settings form on whichever Plugins slot this Host declares.
- * `inject` waits until the slot exists, so Alpha.2 never mounts the retired
- * Settings card and Alpha.1 never mounts `plugins.bundle.config`.
+ * Mount the mode form on the bundle Plugins page and read the same Loader
+ * ConfigForm for the startup notice.
  */
 export function apply(ctx: ClientContext): void {
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'dsh-ponytail: dictionaries')
-  const scope = ctx.settingsScope.bind<PonytailSettings>({ namespace: 'ponytail' })
-  const source = settingsObservable(scope)
+  const form = ctx.configForms.get<PonytailSettings>(PONYTAIL_CONFIG_ENTRY_ID)
+  const source = settingsObservable(form)
 
-  settingsCard(ctx, 'plugins.bundle.config', 'dsh-ponytail', source, scope)
-  settingsCard(ctx, 'settings.plugin.item', 'ponytail', source, scope)
+  settingsCard(ctx, 'plugins.bundle.config', 'dsh-ponytail', source, form)
 
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({
     name: 'shell.overlay',

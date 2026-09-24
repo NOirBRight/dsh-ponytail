@@ -1,7 +1,6 @@
-/** DSH Host plugin for Ponytail's modes, hooks, skills, and settings. */
+/** DSH Host plugin for Ponytail's modes, hooks, skills, and Loader configuration. */
 
 import { Context, Service } from '@deepseek-ai/cordis'
-import Schema from '@deepseek-ai/schemastery'
 import type { Agent, PreStepDecision, SessionStartSource } from '@deepseek-ai/dsh-agent'
 import type { Session, UserMessage } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-agent'
@@ -12,13 +11,12 @@ import type { CommandResult } from '@deepseek-ai/dsh-commands'
 import { PONYTAIL_MODES, isDeactivationCommand, textOnlyContent, type PonytailMode } from './mode.ts'
 import {
   compileSubagentMatcher,
-  loadSettingsSync,
-  readUpstreamConfigSync,
+  Config,
   resolveSettings,
-  upstreamConfigPath,
-  validateSettings,
+  type PonytailConfig,
   type PonytailSettings,
 } from './config.ts'
+import { PONYTAIL_CONFIG_ENTRY_ID } from './config-entry.ts'
 import { buildPolicy } from './policy.ts'
 import type { PonytailModeEvent, PonytailUnitState } from './projection.ts'
 import { discoverBundledSkills } from './skills.ts'
@@ -27,14 +25,8 @@ import { allowDshRuntime } from './compatibility.ts'
 /** Plugin identifier used by Cordis and the DSH bundle loader. */
 export const name = 'dsh-ponytail'
 
-/** Required Host capabilities. */
+/** Required DSH Host capabilities. */
 export const inject = ['agents', 'commands', 'settings', 'skills', 'systemPrompt']
-
-/** Schema for the optional empty bundle config. Settings are user-editable through `ctx.settings`. */
-const pluginConfigSchema = Schema.object({})
-
-/** The settings namespace exposed to DSH Settings and the browser mirror. */
-export const PONYTAIL_SETTINGS_NAMESPACE = 'ponytail'
 
 /** Hide the base skill even when another provider also installed Ponytail globally. */
 function withoutBaseSkillCatalog(messages: UserMessage[]): UserMessage[] {
@@ -47,58 +39,32 @@ function withoutBaseSkillCatalog(messages: UserMessage[]): UserMessage[] {
   })
 }
 
-/** Schema used by the DSH settings provider. */
-export const ponytailSettingsSchema = Schema.object({
-  defaultMode: Schema.union(PONYTAIL_MODES.map(mode => Schema.const(mode))).default('full').description('Default Ponytail mode for new sessions.'),
-  hideStatus: Schema.boolean().default(false).description('Legacy compatibility value; Ponytail no longer injects a composer control.'),
-  quietStartup: Schema.boolean().default(true).description('Hide the browser session-start notice by default.'),
-  subagentMatcher: Schema.string().default('').description('Case-insensitive unanchored regular expression over agentPreset.'),
-})
-
 declare module '@deepseek-ai/cordis' {
   interface Context {
     ponytail: PonytailController
   }
 }
 
-/** 0.1.6 publishes `source` on serial `agent/created`. Compile-target 0.1.5 types omit it. */
-function isSessionStartSource(value: unknown): value is SessionStartSource {
-  return value === 'startup' || value === 'resume' || value === 'clear' || value === 'compact'
-}
-
-/** Read the public 0.1.6 field; hosts that omit it behave like a fresh `startup`. */
-function createdSource(payload: object): SessionStartSource {
-  const source = 'source' in payload ? payload.source : undefined
-  return isSessionStartSource(source) ? source : 'startup'
-}
-
 /** One DSH session's Ponytail controller. */
 export class PonytailController extends Service {
   static inject = inject
-  static Config = pluginConfigSchema
+  static Config = Config
 
-  private readonly settingsScope!: { get(): Partial<PonytailSettings>; update(value: Partial<PonytailSettings>): Promise<void> }
-  private readonly baseSettings!: PonytailSettings
+  private readonly config!: PonytailConfig
   private readonly modes = new WeakMap<Session, PonytailUnitState>()
 
   /**
    * @param ctx - Host context owning the plugin.
-   * @param _config - Bundle config; currently intentionally empty.
+   * @param config - Loader preferences owned by this entry.
    */
-  constructor(ctx: Context, _config: Record<string, never> = {}) {
+  constructor(ctx: Context, config: PonytailConfig) {
     super(ctx, 'ponytail')
     if (!allowDshRuntime(ctx.logger, 'dsh-ponytail', ['@deepseek-ai/dsh-agent'])) return
-    const startup = loadSettingsSync()
-    const upstream = readUpstreamConfigSync(upstreamConfigPath())
-    this.baseSettings = resolveSettings({ env: {}, upstream })
-    this.settingsScope = ctx.settings.register(PONYTAIL_SETTINGS_NAMESPACE, ponytailSettingsSchema, {
-      base: this.baseSettings,
-      applies: 'live',
-      validate: validateSettings,
-    })
-    // Read the resolved setting once at construction so a malformed environment
-    // variable or config fails before this service is published.
-    validateSettings(startup)
+    this.config = config
+    // Resolve once at construction so invalid environment values fail before
+    // this service is published; every later read follows volatile updates.
+    this.currentSettings()
+    ctx.effect(() => ctx.settings.configure({ auto: false }, ctx.fiber), 'dsh-ponytail: settings presentation')
 
     ctx.systemPrompt.section({
       name: 'ponytail:policy',
@@ -108,8 +74,9 @@ export class PonytailController extends Service {
 
     for (const skill of discoverBundledSkills()) ctx.skills.register(skill)
 
-    ctx.on('agent/created', (payload) => {
-      this.initializeSession(payload.agent, createdSource(payload))
+    ctx.on('agent/created', ({ agent, source }) => {
+      this.initializeSession(agent, source)
+      return undefined
     })
     ctx.on('agent/inbox/inserted', ({ agent, message }) => {
       this.applyNaturalDeactivation(agent, [message])
@@ -129,9 +96,17 @@ export class PonytailController extends Service {
     })
   }
 
-  /** Read settings with environment variables taking the documented highest priority. */
+  /** Read live Loader preferences with environment variables at highest priority. */
   currentSettings(): PonytailSettings {
-    return resolveSettings({ env: process.env, dsh: this.settingsScope.get() as Partial<PonytailSettings> })
+    return resolveSettings({
+      env: process.env,
+      config: {
+        defaultMode: this.config.defaultMode.get(),
+        hideStatus: this.config.hideStatus.get(),
+        quietStartup: this.config.quietStartup.get(),
+        subagentMatcher: this.config.subagentMatcher.get(),
+      },
+    })
   }
 
   /** Read live mode state; a fresh runtime starts from the configured default. */
@@ -234,7 +209,9 @@ export class PonytailController extends Service {
       if (words.length !== 2) return { kind: 'error', text: 'Usage: /ponytail default <off|lite|full|ultra>' }
       const mode = this.parseCommandMode(words[1])
       if (mode === undefined) return { kind: 'error', text: 'Mode must be one of off|lite|full|ultra.' }
-      await this.settingsScope.update({ defaultMode: mode })
+      await this.ctx.settings.mutate(PONYTAIL_CONFIG_ENTRY_ID, [
+        { op: 'set', path: ['defaultMode'], value: mode },
+      ])
       return { kind: 'success', text: `Ponytail default mode set to ${mode}.` }
     }
     if (words.length !== 1) return { kind: 'error', text: 'Usage: /ponytail [status|lite|full|ultra|off|default <mode>]' }
@@ -264,5 +241,6 @@ export class PonytailController extends Service {
 export { buildPolicy, discoverBundledSkills }
 export type { PonytailMode } from './mode.ts'
 export type { PonytailModeEvent, PonytailProjection, PonytailUnitState } from './projection.ts'
-export type { PonytailSettings } from './config.ts'
+export { Config }
+export type { PonytailConfig, PonytailSettings } from './config.ts'
 export default PonytailController

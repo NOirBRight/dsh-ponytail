@@ -13,9 +13,8 @@ export interface SessionListMainViewRow {
   }
 }
 
-/** Session list facts needed to recover the former `current` selection. */
+/** Alpha.2 session-list facts needed to recover the main-view selection. */
 export interface SessionListMainViewState {
-  readonly current?: string
   readonly byId: object
 }
 
@@ -26,15 +25,13 @@ function asRow(row: unknown): SessionListMainViewRow | undefined {
 /**
  * Return the Session occupying the main view.
  *
- * Alpha.2 dropped `SessionListState.current`. Occupancy is a positive
- * `retainedBy.mainView` count. `current` remains a fallback for Alpha.1
- * snapshots and older fixtures.
+ * Alpha.2 represents occupancy with a positive `retainedBy.mainView` count.
  */
 export function mainViewSessionId(state: SessionListMainViewState): string | undefined {
   for (const [id, row] of Object.entries(state.byId)) {
     if ((asRow(row)?.retainedBy?.mainView ?? 0) > 0) return id
   }
-  return state.current
+  return undefined
 }
 
 /** Effective Ponytail mode projected onto the main-view Session. */

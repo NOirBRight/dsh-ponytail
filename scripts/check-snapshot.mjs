@@ -3,17 +3,16 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promis
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Service } from '@deepseek-ai/cordis'
 import { Loader } from '@deepseek-ai/cordis-plugin-loader'
 import { AgentRegistry, assembleContextFor } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { createSystemMessage } from '@deepseek-ai/dsh-llm'
-// 0.1.5-rc.1 exports the persistence class as default (official consumers import it by default).
+// Alpha.2 exports the persistence class as default (official consumers import it by default).
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { repairFile } from './repair-session.mjs'
 import { SessionStore } from '@deepseek-ai/dsh-session'
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection'
-import { SettingsProvider } from '@deepseek-ai/dsh-settings'
 import { SkillRegistry } from '@deepseek-ai/dsh-skill'
 import { renderPrompt, SystemPrompt } from '@deepseek-ai/dsh-system-prompt'
 
@@ -27,19 +26,27 @@ const environmentNames = [
   'XDG_CONFIG_HOME',
 ]
 
-class MemorySettings extends SettingsProvider {
-  raw = {}
+class MemorySettings extends Service {
+  static inject = []
 
-  get writable() {
-    return true
+  values = {}
+
+  constructor(ctx) {
+    super(ctx, 'settings')
   }
 
-  async load() {
-    return structuredClone(this.raw)
+  configure() {
+    return () => {}
   }
 
-  async persist(namespace, section) {
-    this.raw[namespace] = structuredClone(section)
+  async mutate(ns, ops) {
+    const section = this.values[ns] ??= {}
+    for (const { op, path, value } of ops) {
+      const [field] = path
+      if (field === undefined) continue
+      if (op === 'set') section[field] = value
+      else delete section[field]
+    }
   }
 }
 
@@ -65,7 +72,7 @@ async function snapshotValue(ctx, agent, assembly) {
 
   return {
     application: {
-      loader: 'alpha.4',
+      loader: '0.1.7-alpha.2',
       plugin: ctx.ponytail.name,
       skills: (await ctx.skills.list()).map(skill => skill.name),
     },
@@ -190,7 +197,7 @@ async function main() {
     } else {
       const expected = await readFile(snapshotPath, 'utf8')
       assert.equal(serialized, expected, `keyless assembled application snapshot differs: ${snapshotPath}`)
-      console.log('snapshot smoke passed: alpha.4 assembled Host transcript is stable')
+      console.log('snapshot smoke passed: alpha.2 assembled Host transcript is stable')
     }
   } finally {
     await ctx.fiber.dispose()

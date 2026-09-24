@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Move all former Ponytail Settings fields into volatile Loader `Config`; the mode form and `/ponytail default` now persist through the real `ponytail` entry's revisioned ConfigForm.
+- Pin DSH packages to `0.1.7-alpha.2` and Cordis to `4.0.4`; remove the Alpha.1 Settings-slot fallback.
+
 ## [0.2.10] - 2026-09-18
 
 - Mount the `defaultMode` form on Alpha.2 `plugins.bundle.config` and keep `settings.plugin.item` as the Alpha.1 degrade path (`inject` waits for the slot the Host actually declares).

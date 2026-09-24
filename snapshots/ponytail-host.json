@@ -1,6 +1,6 @@
 {
   "application": {
-    "loader": "alpha.4",
+    "loader": "0.1.7-alpha.2",
     "plugin": "ponytail",
     "skills": [
       "ponytail",

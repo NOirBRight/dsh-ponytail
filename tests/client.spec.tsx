@@ -10,15 +10,18 @@ import { en, zh } from '../src/client/locales.ts'
 const settingsSnapshot = (value = DEFAULT_SETTINGS, writable = true) => ({
   status: 'ready' as const,
   value,
+  base: {},
+  user: {},
   writable,
   revision: 0,
+  mode: 'host' as const,
 })
 
 function settingsProps(value = DEFAULT_SETTINGS): PonytailSettingsCardProps {
   return {
     useSettings: () => settingsSnapshot(value),
-    save: async () => {},
-    reset: async () => {},
+    save: async () => true,
+    reset: async () => true,
     t: (key: keyof typeof zh) => zh[key],
   } as unknown as PonytailSettingsCardProps
 }
@@ -62,17 +65,13 @@ describe('Ponytail browser surfaces', () => {
     expect(markup).toBe('')
   })
 
-  it('reads the main-view Session from retainedBy, with current as fallback', () => {
+  it('reads the main-view Session from retainedBy occupancy', () => {
     expect(mainViewSessionId({
       byId: {
         other: { retainedBy: {} },
         live: { retainedBy: { mainView: 1 } },
       },
     })).toBe('live')
-    expect(mainViewSessionId({
-      current: 'legacy',
-      byId: { legacy: {} },
-    })).toBe('legacy')
     expect(mainViewSessionId({ byId: {} })).toBeUndefined()
   })
 

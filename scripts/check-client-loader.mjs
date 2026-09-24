@@ -14,8 +14,8 @@ const target = {
 }
 const browserWindow = { __ModuleLoader__: target }
 
-// Evaluate both browser artifacts through Alpha.4's registration facade. The
-// bootstrap factory then constructs Alpha.4's real client module system.
+// Evaluate both browser artifacts through Alpha.2's registration facade. The
+// bootstrap factory then constructs Alpha.2's real client module system.
 const evaluate = (source) => new Function('window', source)(browserWindow)
 evaluate(bootstrapCode)
 evaluate(code)
@@ -52,5 +52,5 @@ const system = bootstrapExports.createClientModuleSystem(target, {
 
 const exports = await system.import('dsh-ponytail')
 assert.equal(typeof exports.apply, 'function')
-assert.deepEqual(exports.inject, ['slots', 'locale', 'settingsScope', 'sessions'])
-console.log('client loader smoke passed: Alpha.4 materialized the built browser face')
+assert.deepEqual(exports.inject, ['slots', 'locale', 'configForms', 'sessions'])
+console.log('client loader smoke passed: Alpha.2 materialized the built browser face')

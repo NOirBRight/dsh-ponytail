@@ -19,6 +19,7 @@ export const zh = {
   save: '保存',
   reset: '恢复默认',
   saving: '保存中…',
+  writeRejected: '宿主拒绝了此偏好设置更新。',
   unavailable: 'Ponytail 设置暂不可用。',
 } as const
 
@@ -41,6 +42,7 @@ export const en = {
   save: 'Save',
   reset: 'Restore defaults',
   saving: 'Saving…',
+  writeRejected: 'The Host rejected this preference update.',
   unavailable: 'Ponytail settings are unavailable.',
 } as const
 
