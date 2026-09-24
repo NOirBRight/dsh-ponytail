@@ -88,7 +88,7 @@ function created(agent: Agent, source: SessionStartSource) {
 }
 
 describe('Ponytail Host integration', () => {
-  it('loads through Alpha.2 services, keeps live mode state, and handles pending commands', async () => {
+  it('loads through RC.1 services, keeps live mode state, and handles pending commands', async () => {
     const ctx = await boot()
     const agent = registerAgent(ctx, 'session-parent')
     ctx.emit('agent/created', created(agent, 'startup'))

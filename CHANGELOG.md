@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## [0.2.12] - 2026-09-24
 
 - Move all former Ponytail Settings fields into volatile Loader `Config`; the mode form and `/ponytail default` now persist through the real `ponytail` entry's revisioned ConfigForm.
-- Pin DSH packages to `0.1.7-alpha.2` and Cordis to `4.0.4`; remove the Alpha.1 Settings-slot fallback.
+- Remove the Alpha.1 Settings-slot fallback.
+- Verify DSH `0.1.7-rc.1` alongside Alpha.2 and use open lower-bound ranges for DSH peers and development dependencies.
 
 ## [0.2.10] - 2026-09-18
 

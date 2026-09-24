@@ -4,33 +4,33 @@
 
 ## Compatibility
 
-Host `@deepseek-ai/dsh-*` peers are constrained to `>=0.1.7-alpha.2 <0.1.8`; `devDependencies` pin Alpha.2 exactly. The Cordis peer range is `>=4.0.4 <5.0.0`, with development pinned to `4.0.4`.
+Host `@deepseek-ai/dsh-*` peers and development dependencies use the open lower-bound range `>=0.1.7-alpha.2`. The lockfile resolves the tested DSH `0.1.7-rc.1` packages. The Cordis peer and development ranges are `>=4.0.4 <5.0.0`; the lockfile resolves Cordis to `4.0.4`.
 
-`package.json#dsh.compatibility.dshReleases` identifies Alpha.2 as this build's compatibility target. Unknown runtimes still warn once and use the normal mount path; only a reproduced failure is blocklisted.
+`package.json#dsh.compatibility.dshReleases` records `0.1.7-alpha.2` and `0.1.7-rc.1` as compatible. Unknown runtimes still warn once and use the normal mount path; only a reproduced failure is blocklisted.
 
 ## Install
 
 Latest:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.10.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/latest/download/dsh-ponytail-0.2.12.tgz
 ```
 
 Fixed GitHub release:
 
 ```sh
-dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.10/dsh-ponytail-0.2.10.tgz
+dsh plugin --profile web add --force https://github.com/NOirBRight/dsh-ponytail/releases/download/v0.2.12/dsh-ponytail-0.2.12.tgz
 ```
 
 Lab checkout for local acceptance:
 
 ```sh
-DSH_HOME=~/.dsh-rc1-canary dsh plugin --profile web add link:/home/noirbright/Workstation/.worktrees/alpha2-compat/dsh-ponytail
+DSH_HOME=~/.dsh-lab dsh plugin --profile web add link:/home/noirbright/Workstation/.worktrees/alpha2-compat/dsh-ponytail
 ```
 
-For the first acceptance pass, install the link only in the `~/.dsh-rc1-canary` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
+For acceptance, install the link only in the `~/.dsh-lab` / port 3082 profile. Keep the production `~/.dsh` / port 3080 profile unchanged.
 
-The bundle compiles against and targets official DSH `0.1.7-alpha.2` packages. It ships the upstream skill content locally, so requests do not fetch the network.
+The bundle compiles against and supports official DSH `0.1.7-alpha.2` and `0.1.7-rc.1` packages. It ships the upstream skill content locally, so requests do not fetch the network.
 
 The repository, release package, and plugin brand are all `dsh-ponytail`. Distribution is GitHub release only: the unscoped `dsh-ponytail` npm name is owned by another publisher, so `npm publish` stays disabled (no `NPM_TOKEN`).
 
@@ -60,7 +60,7 @@ The Loader Config entry id is `ponytail` (the id declared in `cordis.patch.yml`)
 
 Resolution order is `PONYTAIL_*` environment variables, profile-backed Loader Config, the optional upstream `~/.config/ponytail/config.json`, then built-in defaults. The Config form's defaults include the upstream file values. Subagents inherit their parent session mode by default; advanced deployments can scope inheritance with `PONYTAIL_SUBAGENT_MATCHER` or the static Loader `subagentMatcher` field. Matching is case-insensitive and unanchored against DSH `agentPreset`; a missing preset inherits. Invalid regular expressions fail at plugin loading. The matcher is not volatile: Config-form writes to it are rejected rather than saving an invalid pattern.
 
-On DSH Alpha.2, the default-mode card lives on the Plugins page's `plugins.bundle.config` slot (key `dsh-ponytail`, `view: 'page'`). It reads the `ponytail` Loader entry through `ctx.configForms.get('ponytail')`, saves with the accepted revision, and resets Loader overrides; `/ponytail default <mode>` persists the same field. There is no legacy `settings.plugin.item` path. The bundle does not occupy `plugins.item` (the official host-plane card list). The optional startup notice is unavailable on current runtimes; the matcher and advanced preferences stay out of the mode card.
+On DSH Alpha.2 and RC.1, the default-mode card lives on the Plugins page's `plugins.bundle.config` slot (key `dsh-ponytail`, `view: 'page'`). It reads the `ponytail` Loader entry through `ctx.configForms.get('ponytail')`, saves with the accepted revision, and resets Loader overrides; `/ponytail default <mode>` persists the same field. There is no legacy `settings.plugin.item` path. The bundle does not occupy `plugins.item` (the official host-plane card list). The optional startup notice is unavailable on current runtimes; the matcher and advanced preferences stay out of the mode card.
 
 The optional startup notice is unavailable while live mode projections are disabled. `quietStartup` remains a compatibility setting.
 
@@ -71,7 +71,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check` runs unit tests, typecheck, Host/Web builds, 0.1.7-alpha.2 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
+`pnpm run check` runs unit tests, typecheck, Host/Web builds, 0.1.7-rc.1 Host/client loader smokes, and pack/install checks. `scripts/sync-upstream.mjs` updates only the copied SKILL.md files from a local upstream checkout.
 
 The check also compares the keyless assembled Host transcript in `snapshots/ponytail-host.json`; after reviewing an intentional runtime change, refresh it with `pnpm run snapshot:record`.
 

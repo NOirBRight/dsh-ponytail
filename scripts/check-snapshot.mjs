@@ -8,7 +8,7 @@ import { Loader } from '@deepseek-ai/cordis-plugin-loader'
 import { AgentRegistry, assembleContextFor } from '@deepseek-ai/dsh-agent'
 import { CommandRuntime } from '@deepseek-ai/dsh-commands'
 import { createSystemMessage } from '@deepseek-ai/dsh-llm'
-// Alpha.2 exports the persistence class as default (official consumers import it by default).
+// RC.1 keeps the default persistence export used by official consumers.
 import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 import { repairFile } from './repair-session.mjs'
 import { SessionStore } from '@deepseek-ai/dsh-session'
@@ -72,7 +72,7 @@ async function snapshotValue(ctx, agent, assembly) {
 
   return {
     application: {
-      loader: '0.1.7-alpha.2',
+      loader: '0.1.7-rc.1',
       plugin: ctx.ponytail.name,
       skills: (await ctx.skills.list()).map(skill => skill.name),
     },
@@ -154,6 +154,8 @@ async function main() {
     ctx.emit('agent/created', { agent, source: 'startup' })
     const assembly = await ctx.systemPrompt.assemble(assembleContextFor(agent))
     // V3 envelope: request/header carries no system text; the rendered prompt is surface node 0.
+    session.append('turn/start', { turn: 1 })
+    session.append('step/start', { turn: 1, step: 1 })
     session.append('request/header', {
       header: { config: { provider: 'snapshot-provider', model: 'snapshot-model' } },
       reason: 'initial',
@@ -163,6 +165,8 @@ async function main() {
       step: 1,
       message: createSystemMessage(renderPrompt(assembly), '@deepseek-ai/dsh-system-prompt'),
     }, { surfaceOp: 'append' })
+    session.append('step/end', { turn: 1, step: 1 })
+    session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
     assert.equal(eventsContainPonytail(session), false)
     const storageRoot = join(configRoot, 'sessions')
     const writer = new Context()
@@ -197,7 +201,7 @@ async function main() {
     } else {
       const expected = await readFile(snapshotPath, 'utf8')
       assert.equal(serialized, expected, `keyless assembled application snapshot differs: ${snapshotPath}`)
-      console.log('snapshot smoke passed: alpha.2 assembled Host transcript is stable')
+      console.log('snapshot smoke passed: rc.1 assembled Host transcript is stable')
     }
   } finally {
     await ctx.fiber.dispose()

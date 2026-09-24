@@ -72,7 +72,7 @@ try {
   })
   assert.equal((await ctx.skills.list()).length, 6)
   assert.match(ctx.ponytail.policyFor(agent), /^PONYTAIL MODE ACTIVE — level: full/)
-  console.log('loader smoke passed: Alpha.2 Loader mounted the built Host plugin')
+  console.log('loader smoke passed: RC.1 Loader mounted the built Host plugin')
 } finally {
   await ctx.fiber.dispose()
 }
