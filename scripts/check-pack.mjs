@@ -7,8 +7,18 @@ mkdirSync(destination, { recursive: true })
 execFileSync('pnpm', ['pack', '--pack-destination', destination], { stdio: 'inherit' })
 const manifest = JSON.parse(readFileSync('package.json', 'utf8'))
 const archive = `${manifest.name}-${manifest.version}.tgz`
-if (!existsSync(join(destination, archive))) throw new Error(`pnpm pack did not produce ${archive}`)
-const listing = execFileSync('tar', ['-tzf', join(destination, archive)], { encoding: 'utf8' })
+const archivePath = join(destination, archive)
+if (!existsSync(archivePath)) throw new Error(`pnpm pack did not produce ${archive}`)
+const packed = JSON.parse(execFileSync('tar', ['-xOzf', archivePath, 'package/package.json'], { encoding: 'utf8' }))
+for (const section of ['dependencies', 'optionalDependencies', 'devDependencies', 'peerDependencies']) {
+  for (const [name, range] of Object.entries(packed[section] ?? {})) {
+    if (name !== '@deepseek-ai/dsh' && !name.startsWith('@deepseek-ai/dsh-')) continue
+    if (typeof range !== 'string' || !/^>=\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(range)) {
+      throw new Error(`${section}.${name} must use an unbounded >= lower range`)
+    }
+  }
+}
+const listing = execFileSync('tar', ['-tzf', archivePath], { encoding: 'utf8' })
 const requiredFiles = [
   'package/cordis.patch.yml',
   'package/lib/index.js',
